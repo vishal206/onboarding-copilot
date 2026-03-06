@@ -1,28 +1,29 @@
-"use client";
-import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function Home() {
-  const [status, setStatus] = useState("checking...");
-
-  useEffect(() => {
-    // Call our FastAPI backend when the page loads
-    fetch("http://localhost:8000/health")
-      .then((res) => res.json())
-      .then((data) => setStatus(data.status))
-      .catch(() => setStatus("cannot reach backend"));
-  }, []);
-
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold text-gray-800 mb-4">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-white p-24">
+      <h1 className="text-5xl font-bold text-gray-900 mb-4 text-center">
         Onboarding Co-Pilot
       </h1>
-      <p className="text-gray-500 mb-2">Backend status:</p>
-      <span
-        className={`text-lg font-semibold ${status === "ok" ? "text-green-500" : "text-red-500"}`}
-      >
-        {status}
-      </span>
+      <p className="text-xl text-gray-500 mb-10 text-center max-w-xl">
+        AI-powered onboarding assistant. Upload your docs, get an instant Q&A
+        bot for new hires.
+      </p>
+      <div className="flex gap-4">
+        <Link
+          href="/sign-up"
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+        >
+          Get Started Free
+        </Link>
+        <Link
+          href="/sign-in"
+          className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition"
+        >
+          Sign In
+        </Link>
+      </div>
     </main>
   );
 }
