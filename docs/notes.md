@@ -73,6 +73,45 @@ async with httpx.AsyncClient() as client:
 
 ---
 
+## Database (PostgreSQL + pgvector)
+
+**Stack decision:** PostgreSQL 17 + pgvector on Railway using the `pgvector-pg17` template.
+
+**Why not plain Railway PostgreSQL?**
+Railway's default Postgres is version 17 but doesn't include pgvector. The `pgvector-pg17` template has it pre-installed.
+
+**Why not Supabase?**
+Keeping everything on Railway is simpler — one platform, one bill. The pgvector template solved the only reason to consider Supabase.
+
+**SSL gotcha:**
+
+- Railway's plain Postgres requires `ssl='require'`
+- The pgvector template does NOT use SSL — remove `connect_args={"ssl": "require"}` from both `db/session.py` and `alembic/env.py`
+
+**Connection URLs:**
+
+- `DATABASE_URL` (internal) — only works inside Railway, use for production
+- `DATABASE_PUBLIC_URL` — works from your local Mac, use for local dev
+- Always replace `postgresql://` with `postgresql+asyncpg://` for SQLAlchemy async
+
+**Alembic gotchas:**
+
+1. Missing `greenlet` package on Python 3.9 — fix: `pip install greenlet`
+2. Auto-generated migration missing pgvector import — add `import pgvector.sqlalchemy` at top of migration file
+3. pgvector extension not enabled — add `op.execute('CREATE EXTENSION IF NOT EXISTS vector')` as first line of `upgrade()` in migration file
+
+---
+
+## Railway Deployment
+
+- Set **Root Directory** to `backend` in Railway service settings
+- Add a `Procfile` in `backend/`: `web: uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Generate a public domain under Settings → Networking → Generate Domain
+- Use internal `DATABASE_URL` for Railway → Railway communication (faster, free)
+- Use `DATABASE_PUBLIC_URL` in local `.env` for development
+
+---
+
 ## Environment Variables
 
 - **Never commit** `.env` or `.env.local` — both are in `.gitignore`
@@ -83,6 +122,5 @@ async with httpx.AsyncClient() as client:
 
 ## Next Up
 
-- Day 3: PostgreSQL schema + pgvector setup + SQLAlchemy models
-- Day 4: Cloudflare R2 file storage
+- Day 4: Cloudflare R2 file storage setup
 - Day 5: Connect everything + Clerk webhook → DB sync
