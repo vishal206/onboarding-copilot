@@ -167,9 +167,9 @@ Detailed notes on every part of the system — decisions made, gotchas hit, and 
 
 | Doc                                                                                            | What's inside                                                 |
 | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [Architecture](https://github.com/vishal206/onboarding-copilot/blob/main/docs/architecture.md) | System design, how services connect, why each tech was chosen |
-| [Auth](https://github.com/vishal206/onboarding-copilot/blob/main/docs/auth.md)                 | Clerk setup, middleware, token flow, version gotchas          |
-| [Database](https://github.com/vishal206/onboarding-copilot/blob/main/docs/database.md)         | Schema, pgvector, Alembic migrations, connection URLs         |
-| [Storage](https://github.com/vishal206/onboarding-copilot/blob/main/docs/storage.md)           | Cloudflare R2 setup, file naming, signed URLs                 |
-| [Deployment](https://github.com/vishal206/onboarding-copilot/blob/main/docs/deployment.md)     | Railway config, environment variables, SSL notes              |
-| [API](https://github.com/vishal206/onboarding-copilot/blob/main/docs/api.md)                   | All endpoints — current and coming soon                       |
+| [Architecture](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Architecture.md) | System design, how services connect, why each tech was chosen |
+| [Auth](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Auth.md)                 | Clerk setup, middleware, token flow, version gotchas          |
+| [Database](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Database.md)         | Schema, pgvector, Alembic migrations, connection URLs         |
+| [Storage](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Storage.md)           | Cloudflare R2 setup, file naming, signed URLs                 |
+| [Deployment](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Deployment.md)     | Railway config, environment variables, SSL notes              |
+| [API](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Api.md)                   | All endpoints — current and coming soon                       |
