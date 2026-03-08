@@ -4,6 +4,7 @@ annotated-types==0.7.0
 anyio==4.12.1
 async-timeout==5.0.1
 asyncpg==0.31.0
+attrs==25.4.0
 boto3==1.42.63
 botocore==1.42.63
 certifi==2026.2.25
@@ -11,6 +12,7 @@ cffi==2.0.0
 clerk-backend-api==4.2.0
 click==8.1.8
 cryptography==45.0.7
+Deprecated==1.3.1
 ecdsa==0.19.1
 exceptiongroup==1.3.1
 fastapi==0.128.8
@@ -38,9 +40,14 @@ rsa==4.9.1
 s3transfer==0.16.0
 six==1.17.0
 SQLAlchemy==2.0.48
+standardwebhooks==1.0.1
 starlette==0.49.3
+svix==1.86.0
 tomli==2.4.0
+types-Deprecated==1.3.1.20260130
+types-python-dateutil==2.9.0.20260124
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 urllib3==1.26.20
 uvicorn==0.39.0
+wrapt==2.1.2

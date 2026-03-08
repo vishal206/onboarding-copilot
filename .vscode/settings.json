@@ -1,0 +1,15 @@
+{
+  "sqltools.connections": [
+    {
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "yamabiko.proxy.rlwy.net",
+      "port": 48466,
+      "driver": "PostgreSQL",
+      "name": "onboarding-copilot",
+      "database": "railway",
+      "password": "49mo60bpgxrqy2ulf4zjyqhaip3xnc3z",
+      "username": "postgres"
+    }
+  ]
+}
