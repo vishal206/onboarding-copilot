@@ -1,9 +1,16 @@
-import { UserButton } from "@clerk/nextjs";
-import { currentUser } from "@clerk/nextjs/server";
+"use client";
 
-export default async function DashboardPage() {
-  // currentUser() reads the logged-in user on the server
-  const user = await currentUser();
+import { UserButton, useUser } from "@clerk/nextjs";
+import FileUpload from "@/components/FileUpload";
+
+const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
+
+export default function DashboardPage() {
+  const { user } = useUser();
+
+  const handleUploadSuccess = () => {
+    alert("File uploaded successfully!");
+  };
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -22,8 +29,8 @@ export default async function DashboardPage() {
           {`You're logged in as ${user?.emailAddresses[0].emailAddress}`}
         </p>
 
-        {/* Placeholder cards — you'll fill these in later */}
-        <div className="grid grid-cols-3 gap-6">
+        {/* Placeholder cards */}
+        <div className="grid grid-cols-3 gap-6 mb-10">
           {["Your Bots", "Documents", "Analytics"].map((item) => (
             <div
               key={item}
@@ -34,6 +41,12 @@ export default async function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* File Upload */}
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          Upload Documents
+        </h3>
+        <FileUpload botId={TEST_BOT_ID} onUploadSuccess={handleUploadSuccess} />
       </div>
     </main>
   );
