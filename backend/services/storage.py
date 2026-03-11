@@ -18,7 +18,7 @@ def get_r2_client():
     )
 
 
-def upload_file(file_bytes: bytes, filename: str, content_type: str) -> str:
+async def upload_file(file_bytes: bytes, filename: str, content_type: str) -> str:
     """
     Upload a file to R2 and return its URL.
     filename should be unique — we'll prefix with bot_id later.

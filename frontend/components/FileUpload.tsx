@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { FileRejection, useDropzone } from "react-dropzone";
+import { useAuth } from "@clerk/nextjs";
 
 const ALLOWED_TYPES = {
   "application/pdf": [".pdf"],
@@ -24,6 +25,7 @@ export default function FileUpload({
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { getToken } = useAuth();
 
   const onDrop = useCallback(
     async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
@@ -49,17 +51,27 @@ export default function FileUpload({
         formData.append("file", file);
         formData.append("bot_id", botId);
 
+        const token = await getToken();
+
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/documents/upload`,
           {
             method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
             body: formData,
           },
         );
 
         if (!res.ok) {
           const data = await res.json();
-          throw new Error(data.detail || "Upload failed");
+          // detail can be a string or a FastAPI validation array
+          const message =
+            typeof data.detail === "string"
+              ? data.detail
+              : (data.detail?.[0]?.msg ?? "Upload failed");
+          throw new Error(message);
         }
 
         onUploadSuccess();

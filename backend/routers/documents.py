@@ -1,11 +1,11 @@
-import uuid
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-
 from db.session import get_db
-from db.models import Document
-from services.storage import upload_file, get_signed_url
+from db.models import Document, Bot, User
+from services.storage import upload_file
+from auth import get_current_user_id
+import uuid
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -16,57 +16,69 @@ ALLOWED_TYPES = {
     "text/plain": ".txt",
 }
 
+MAX_SIZE = 10 * 1024 * 1024  # 10MB
+
 
 @router.post("/upload")
 async def upload_document(
-    bot_id: str,
     file: UploadFile = File(...),
+    bot_id: str = Form(...),
     db: AsyncSession = Depends(get_db),
+    clerk_user_id: str = Depends(get_current_user_id),
 ):
     # Validate file type
     if file.content_type not in ALLOWED_TYPES:
-        raise HTTPException(
-            status_code=400, detail=f"File type not allowed. Accepted: PDF, DOCX, TXT"
-        )
+        raise HTTPException(status_code=400, detail="File type not allowed")
 
-    # Read file contents
+    # Validate file size
     contents = await file.read()
+    if len(contents) > MAX_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Max size is 10MB")
 
-    # Validate file size — max 10MB
-    max_size = 10 * 1024 * 1024  # 10MB in bytes
-    if len(contents) > max_size:
-        raise HTTPException(
-            status_code=400, detail="File too large. Maximum size is 10MB"
+    # Auto-create bot if it doesn't exist
+    result = await db.execute(select(Bot).where(Bot.id == bot_id))
+    bot = result.scalar_one_or_none()
+
+    if not bot:
+        # Get internal user ID from clerk_user_id
+        user_result = await db.execute(
+            select(User).where(User.clerk_user_id == clerk_user_id)
         )
+        user = user_result.scalar_one_or_none()
 
-    # Create a unique filename so files never overwrite each other
-    # Format: bot_id/unique_id_originalname.ext
-    unique_id = str(uuid.uuid4())[:8]
-    extension = ALLOWED_TYPES[file.content_type]
-    safe_filename = f"{bot_id}/{unique_id}_{file.filename}"
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found in database")
+
+        bot = Bot(
+            id=bot_id,
+            user_id=str(user.id),  # internal UUID, not clerk_user_id
+            name="Default Bot",
+            system_prompt="You are a helpful onboarding assistant.",
+            welcome_message="Hi! How can I help you today?",
+            is_active=True,
+        )
+        db.add(bot)
+        await db.flush()
 
     # Upload to R2
-    file_url = upload_file(
-        file_bytes=contents,
-        filename=safe_filename,
-        content_type=file.content_type,
-    )
+    file_key = f"{bot_id}/{uuid.uuid4()}_{file.filename}"
+    file_url = await upload_file(contents, file_key, file.content_type)
 
-    # Save document record to database
+    # Save document record to DB
     document = Document(
-        bot_id=bot_id,
+        bot_id=str(bot_id),
         filename=file.filename,
-        file_url=safe_filename,  # store the R2 key, not the full URL
+        file_url=file_url,
         status="uploaded",
     )
     db.add(document)
-    await db.flush()  # assigns the ID without committing yet
+    await db.commit()
+    await db.refresh(document)
 
     return {
-        "id": document.id,
+        "id": str(document.id),
         "filename": document.filename,
         "status": document.status,
-        "size_bytes": len(contents),
     }
 
 
