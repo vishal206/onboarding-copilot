@@ -54,6 +54,9 @@ class Document(Base):
     file_url: Mapped[str] = mapped_column(String, nullable=True)
     # Status tracks where we are in processing: uploaded → parsing → indexing → ready
     status: Mapped[str] = mapped_column(String, default="uploaded")
+    raw_text: Mapped[str] = mapped_column(
+        String, nullable=True
+    )  # Store extracted text here
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
 
     bot: Mapped["Bot"] = relationship("Bot", back_populates="documents")
