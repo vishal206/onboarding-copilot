@@ -4,6 +4,7 @@ from sqlalchemy import select
 from db.session import get_db
 from db.models import Document, Bot, User
 from services.storage import upload_file
+from services.parser import Parser
 from auth import get_current_user_id
 import uuid
 
@@ -71,9 +72,16 @@ async def upload_document(
         file_url=file_url,
         status="uploaded",
     )
+
     db.add(document)
     await db.commit()
     await db.refresh(document)
+
+    # Parse after document is saved
+    raw_text = Parser(contents, file.content_type).parse()
+    document.raw_text = raw_text
+    document.status = "parsed"
+    await db.commit()
 
     return {
         "id": str(document.id),
