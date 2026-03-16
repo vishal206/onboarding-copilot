@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from db.session import get_db
 from db.models import Document, Bot, User
-from services.storage import upload_file
+from services.storage import delete_file, upload_file
 from services.parser import Parser
 from auth import get_current_user_id
 import uuid
@@ -59,11 +59,17 @@ async def upload_document(
             is_active=True,
         )
         db.add(bot)
-        await db.flush()
+        try:
+            await db.flush()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error creating bot: {str(e)}")
 
     # Upload to R2
     file_key = f"{bot_id}/{uuid.uuid4()}_{file.filename}"
-    file_url = await upload_file(contents, file_key, file.content_type)
+    try:
+        file_url = await upload_file(contents, file_key, file.content_type)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
 
     # Save document record to DB
     document = Document(
@@ -74,11 +80,29 @@ async def upload_document(
     )
 
     db.add(document)
-    await db.commit()
-    await db.refresh(document)
+    try:
+        await db.commit()
+        await db.refresh(document)
+    except Exception as e:
+        await delete_file(file_key)
+        raise HTTPException(
+            status_code=500, detail=f"Error committing document: {str(e)}"
+        )
 
-    # Parse after document is saved
-    raw_text = Parser(contents, file.content_type).parse()
+    try:
+        # Parse after document is saved
+        raw_text = Parser(contents, file.content_type).parse()
+    except Exception as e:
+        document.status = "failed"
+        await db.commit()
+        raise HTTPException(status_code=500, detail=f"Error parsing document: {str(e)}")
+
+    if not raw_text.strip():
+        document.status = "failed"
+        await db.commit()
+        raise HTTPException(
+            status_code=400, detail="No text could be extracted from the document"
+        )
     document.raw_text = raw_text
     document.status = "parsed"
     await db.commit()
