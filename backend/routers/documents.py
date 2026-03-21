@@ -4,7 +4,7 @@ from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from db.session import get_db
-from db.models import Document, Bot, User
+from db.models import Document, Bot, DocumentChunk, User
 from services.storage import delete_file, upload_file
 from services.parser import Parser
 from auth import get_current_user_id
@@ -163,4 +163,21 @@ async def process_document(document_id: str, db: AsyncSession = Depends(get_db))
     chunks = Chunker(doc.raw_text).chunk()
     embeddings = Embedder(chunks).embed()
 
-    return {"chunks": chunks, "embeddings": embeddings}
+    try:
+        for idx, chunk in enumerate(chunks):
+            chunk_record = DocumentChunk(
+                document_id=document_id,
+                content=chunk,
+                chunk_index=idx,
+                embedding=embeddings[idx],
+            )
+            db.add(chunk_record)
+
+        doc.status = "indexed"
+        await db.commit()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error processing document: {str(e)}"
+        )
+
+    return {"id": document_id, "status": doc.status}
