@@ -1,3 +1,4 @@
+from services.embedder import Embedder
 from services.chunker import Chunker
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -160,5 +161,6 @@ async def process_document(document_id: str, db: AsyncSession = Depends(get_db))
     # Here you would add your processing logic, chunking
 
     chunks = Chunker(doc.raw_text).chunk()
+    embeddings = Embedder(chunks).embed()
 
-    return {"chunks": chunks}
+    return {"chunks": chunks, "embeddings": embeddings}
