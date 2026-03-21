@@ -1,3 +1,4 @@
+from services.chunker import Chunker
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -146,3 +147,18 @@ async def delete_document(
     await db.delete(document)
 
     return {"message": "Document deleted"}
+
+
+@router.post("/process")
+async def process_document(document_id: str, db: AsyncSession = Depends(get_db)):
+    doc = await db.get(Document, document_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if doc.status != "parsed":
+        raise HTTPException(status_code=400, detail="Document not ready for processing")
+
+    # Here you would add your processing logic, chunking
+
+    chunks = Chunker(doc.raw_text).chunk()
+
+    return {"chunks": chunks}
