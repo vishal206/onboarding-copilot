@@ -1,6 +1,15 @@
+from services.pipeline import process_document
 from services.embedder import Embedder
 from services.chunker import Chunker
-from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
+from fastapi import (
+    APIRouter,
+    UploadFile,
+    File,
+    Form,
+    Depends,
+    HTTPException,
+    BackgroundTasks,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from db.session import get_db
@@ -24,6 +33,7 @@ MAX_SIZE = 10 * 1024 * 1024  # 10MB
 
 @router.post("/upload")
 async def upload_document(
+    background_task: BackgroundTasks,
     file: UploadFile = File(...),
     bot_id: str = Form(...),
     db: AsyncSession = Depends(get_db),
@@ -109,6 +119,8 @@ async def upload_document(
     document.status = "parsed"
     await db.commit()
 
+    background_task.add_task(process_document, str(document.id))
+
     return {
         "id": str(document.id),
         "filename": document.filename,
@@ -148,36 +160,3 @@ async def delete_document(
     await db.delete(document)
 
     return {"message": "Document deleted"}
-
-
-@router.post("/process")
-async def process_document(document_id: str, db: AsyncSession = Depends(get_db)):
-    doc = await db.get(Document, document_id)
-    if not doc:
-        raise HTTPException(status_code=404, detail="Document not found")
-    if doc.status != "parsed":
-        raise HTTPException(status_code=400, detail="Document not ready for processing")
-
-    # Here you would add your processing logic, chunking
-
-    chunks = Chunker(doc.raw_text).chunk()
-    embeddings = Embedder(chunks).embed()
-
-    try:
-        for idx, chunk in enumerate(chunks):
-            chunk_record = DocumentChunk(
-                document_id=document_id,
-                content=chunk,
-                chunk_index=idx,
-                embedding=embeddings[idx],
-            )
-            db.add(chunk_record)
-
-        doc.status = "indexed"
-        await db.commit()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error processing document: {str(e)}"
-        )
-
-    return {"id": document_id, "status": doc.status}
