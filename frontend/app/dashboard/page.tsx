@@ -1,16 +1,23 @@
 "use client";
 
-import { UserButton, useUser } from "@clerk/nextjs";
+import { useAuth, UserButton, useUser } from "@clerk/nextjs";
 import FileUpload from "@/components/FileUpload";
+import { useState } from "react";
+import DocumentList from "@/components/DocumentList";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
 export default function DashboardPage() {
   const { user } = useUser();
-
-  const handleUploadSuccess = () => {
-    alert("File uploaded successfully!");
+  const [status, setStatus] = useState<string>();
+  const STATUS_LABELS: Record<string, string> = {
+    uploaded: "Uploading...",
+    parsed: "Parsing...",
+    indexed: "Ready ✅",
+    failed: "Failed ❌",
+    "indexing failed": "Failed ❌",
   };
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -46,7 +53,11 @@ export default function DashboardPage() {
         <h3 className="text-xl font-semibold text-gray-800 mb-4">
           Upload Documents
         </h3>
-        <FileUpload botId={TEST_BOT_ID} onUploadSuccess={handleUploadSuccess} />
+        <FileUpload
+          botId={TEST_BOT_ID}
+          onUploadSuccess={() => setRefreshTrigger((prev) => prev + 1)}
+        />
+        <DocumentList botId={TEST_BOT_ID} refreshTrigger={refreshTrigger} />
       </div>
     </main>
   );

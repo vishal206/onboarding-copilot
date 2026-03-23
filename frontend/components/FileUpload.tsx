@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { useAuth } from "@clerk/nextjs";
 
@@ -26,6 +26,7 @@ export default function FileUpload({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { getToken } = useAuth();
+  const [documentId, setDocumentId] = useState<string>("");
 
   const onDrop = useCallback(
     async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
@@ -74,6 +75,8 @@ export default function FileUpload({
           throw new Error(message);
         }
 
+        const data = await res.json();
+        setDocumentId(data.id);
         onUploadSuccess();
       } catch (err: unknown) {
         const message =
@@ -85,7 +88,7 @@ export default function FileUpload({
         setUploading(false);
       }
     },
-    [botId, onUploadSuccess],
+    [botId],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

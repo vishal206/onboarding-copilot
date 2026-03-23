@@ -151,7 +151,7 @@ async def delete_document(
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    # Delete from R2
+    # Delete from R2e
     from services.storage import delete_file
 
     delete_file(document.file_url)
@@ -160,3 +160,12 @@ async def delete_document(
     await db.delete(document)
 
     return {"message": "Document deleted"}
+
+
+@router.get("/{document_id}/status")
+async def get_document_status(document_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Document).where(Document.id == document_id))
+    document = result.scalar_one_or_none()
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return {"status": document.status}
