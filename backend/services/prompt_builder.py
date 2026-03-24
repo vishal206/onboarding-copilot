@@ -6,8 +6,8 @@ class PromptBuilder:
         self,
         bot: Bot,
         chunks: list[dict],
-        conversation_history: list[dict],
         question: str,
+        conversation_history: list[dict] = [],
     ):
         self.bot = bot
         self.chunks = chunks

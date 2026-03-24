@@ -1,6 +1,12 @@
-from fastapi import APIRouter
+from services.openai import OpenAi
+from services.prompt_builder import PromptBuilder
+from fastapi import APIRouter, Depends
 from services.rag import RAGPipeline
 from pydantic import BaseModel
+from db.models import Bot
+from db.session import get_db
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/query", tags=["query"])
 
@@ -10,9 +16,21 @@ class QueryRequest(BaseModel):
     question: str
 
 
-@router.post("/")
-async def query(request: QueryRequest):
+@router.post("/chat")
+async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
 
     rag = RAGPipeline(request.bot_id)
-    results = await rag.query(request.question)
-    return {"results": results}
+    chunks = await rag.query(request.question)
+
+    result = await db.execute(select(Bot).where(Bot.id == request.bot_id))
+    botObject = result.scalar_one_or_none()
+
+    prompt = PromptBuilder(
+        bot=botObject,
+        chunks=chunks,
+        question=request.question,
+    ).build()
+
+    openaiResponse = OpenAi(prompt).generate()
+
+    return {"response": openaiResponse}
