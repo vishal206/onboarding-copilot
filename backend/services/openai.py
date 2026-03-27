@@ -1,4 +1,5 @@
 from openai import OpenAI
+from typing import Generator
 
 
 class OpenAi:
@@ -7,9 +8,12 @@ class OpenAi:
         self.client = OpenAI()
         self.model = "gpt-4o-mini"
 
-    def generate(self) -> str:
+    def generate(self) -> Generator:
         response = self.client.chat.completions.create(
-            model=self.model,
-            messages=self.prompt,
+            model=self.model, messages=self.prompt, stream=True
         )
-        return response.choices[0].message.content
+
+        for chunk in response:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                yield delta

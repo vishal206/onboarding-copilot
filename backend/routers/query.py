@@ -7,6 +7,7 @@ from db.models import Bot
 from db.session import get_db
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.responses import StreamingResponse
 
 router = APIRouter(prefix="/query", tags=["query"])
 
@@ -31,6 +32,4 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
         question=request.question,
     ).build()
 
-    openaiResponse = OpenAi(prompt).generate()
-
-    return {"response": openaiResponse}
+    return StreamingResponse(OpenAi(prompt).generate(), media_type="text/plain")
