@@ -1,5 +1,5 @@
 from openai import OpenAI
-from typing import Generator
+from typing import AsyncGenerator, Generator
 
 
 class OpenAi:
@@ -8,7 +8,7 @@ class OpenAi:
         self.client = OpenAI()
         self.model = "gpt-4o-mini"
 
-    def generate(self) -> Generator:
+    async def generate(self) -> AsyncGenerator:
         response = self.client.chat.completions.create(
             model=self.model, messages=self.prompt, stream=True
         )

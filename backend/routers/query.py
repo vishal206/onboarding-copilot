@@ -1,3 +1,5 @@
+from http.client import HTTPException
+
 from services.openai import OpenAi
 from services.prompt_builder import PromptBuilder
 from fastapi import APIRouter, Depends
@@ -25,6 +27,8 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
 
     result = await db.execute(select(Bot).where(Bot.id == request.bot_id))
     botObject = result.scalar_one_or_none()
+    if not botObject:
+        raise HTTPException(status_code=404, detail="Bot not found")
 
     prompt = PromptBuilder(
         bot=botObject,
