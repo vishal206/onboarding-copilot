@@ -4,6 +4,7 @@ import { useAuth, UserButton, useUser } from "@clerk/nextjs";
 import FileUpload from "@/components/FileUpload";
 import { useState } from "react";
 import DocumentList from "@/components/DocumentList";
+import ChatWindow from "@/components/chat/ChatWindow";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -58,6 +59,7 @@ export default function DashboardPage() {
           onUploadSuccess={() => setRefreshTrigger((prev) => prev + 1)}
         />
         <DocumentList botId={TEST_BOT_ID} refreshTrigger={refreshTrigger} />
+        <ChatWindow botId={TEST_BOT_ID} />
       </div>
     </main>
   );
