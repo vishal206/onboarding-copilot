@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
 interface Message {
@@ -18,6 +18,7 @@ export default function ChatWindow({ botId }: ChatWindowProps) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [sessionId] = useState(() => crypto.randomUUID());
   const { getToken } = useAuth();
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function ChatWindow({ botId }: ChatWindowProps) {
         body: JSON.stringify({
           bot_id: botId,
           question,
+          session_id: sessionId,
           conversation_history: messages, // send history without the new user message
         }),
       });
