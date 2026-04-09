@@ -7,7 +7,6 @@ import ReactMarkdown from "react-markdown";
 interface BotInfo {
   id: string;
   name: string;
-  description: string | null;
   welcome_message: string | null;
 }
 
@@ -60,7 +59,11 @@ export default function PublicChatPage({
     const userMessage: Message = { role: "user", content: question };
     const historyBeforeSend = [...messages];
 
-    setMessages((prev) => [...prev, userMessage, { role: "assistant", content: "" }]);
+    setMessages((prev) => [
+      ...prev,
+      userMessage,
+      { role: "assistant", content: "" },
+    ]);
     setInput("");
     setLoading(true);
 
@@ -149,11 +152,6 @@ export default function PublicChatPage({
           <h1 className="text-sm font-semibold text-gray-800 leading-tight">
             {bot.name}
           </h1>
-          {bot.description && (
-            <p className="text-xs text-gray-400 leading-tight">
-              {bot.description}
-            </p>
-          )}
         </div>
         <div className="ml-auto text-xs text-gray-400 font-medium">
           Powered by Onboarding Co-Pilot
@@ -216,9 +214,15 @@ export default function PublicChatPage({
                   )
                 ) : (
                   <span className="inline-flex gap-1 items-center text-gray-400">
-                    <span className="animate-bounce [animation-delay:0ms]">●</span>
-                    <span className="animate-bounce [animation-delay:150ms]">●</span>
-                    <span className="animate-bounce [animation-delay:300ms]">●</span>
+                    <span className="animate-bounce [animation-delay:0ms]">
+                      ●
+                    </span>
+                    <span className="animate-bounce [animation-delay:150ms]">
+                      ●
+                    </span>
+                    <span className="animate-bounce [animation-delay:300ms]">
+                      ●
+                    </span>
                   </span>
                 )}
               </div>

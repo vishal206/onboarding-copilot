@@ -17,7 +17,6 @@ async def public_bot_info(bot_id: str, db: AsyncSession = Depends(get_db)):
     return {
         "id": str(bot.id),
         "name": bot.name,
-        "description": bot.description,
         "welcome_message": bot.welcome_message,
         "created_at": bot.created_at,
     }
