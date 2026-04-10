@@ -13,6 +13,7 @@ interface BotInfo {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  sources?: string[];
 }
 
 export default function PublicChatPage({
@@ -39,7 +40,6 @@ export default function PublicChatPage({
       })
       .then((data: BotInfo) => {
         setBot(data);
-        // Seed chat with the welcome message
         if (data.welcome_message) {
           setMessages([{ role: "assistant", content: data.welcome_message }]);
         }
@@ -83,19 +83,51 @@ export default function PublicChatPage({
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
+      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            role: "assistant",
-            content: updated[updated.length - 1].content + chunk,
-          };
-          return updated;
-        });
+        buffer += decoder.decode(value, { stream: true });
+
+        // Check if the sources delimiter has arrived yet
+        const delimiterIndex = buffer.indexOf("\n\n__SOURCES__:");
+
+        if (delimiterIndex !== -1) {
+          // Split into answer text and sources JSON
+          const answerText = buffer.slice(0, delimiterIndex);
+          const sourcesRaw = buffer.slice(
+            delimiterIndex + "\n\n__SOURCES__:".length,
+          );
+
+          let sources: string[] = [];
+          try {
+            const parsed = JSON.parse(sourcesRaw);
+            sources = parsed.sources ?? [];
+          } catch {
+            // If JSON is malformed, just show no sources
+          }
+
+          setMessages((prev) => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              role: "assistant",
+              content: answerText,
+              sources,
+            };
+            return updated;
+          });
+        } else {
+          // Still streaming the answer — update content with buffer so far
+          setMessages((prev) => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              role: "assistant",
+              content: buffer,
+            };
+            return updated;
+          });
+        }
       }
     } catch {
       setMessages((prev) => {
@@ -172,58 +204,89 @@ export default function PublicChatPage({
                   {bot.name.charAt(0).toUpperCase()}
                 </div>
               )}
-              <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-blue-600 text-white rounded-br-sm"
-                    : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
-                }`}
-              >
-                {msg.content ? (
-                  msg.role === "assistant" ? (
-                    <ReactMarkdown
-                      components={{
-                        p: ({ children }) => (
-                          <p className="mb-2 last:mb-0">{children}</p>
-                        ),
-                        ul: ({ children }) => (
-                          <ul className="list-disc pl-4 mb-2 space-y-1">
-                            {children}
-                          </ul>
-                        ),
-                        ol: ({ children }) => (
-                          <ol className="list-decimal pl-4 mb-2 space-y-1">
-                            {children}
-                          </ol>
-                        ),
-                        li: ({ children }) => <li>{children}</li>,
-                        strong: ({ children }) => (
-                          <strong className="font-semibold">{children}</strong>
-                        ),
-                        code: ({ children }) => (
-                          <code className="bg-gray-100 rounded px-1 py-0.5 text-xs">
-                            {children}
-                          </code>
-                        ),
-                      }}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
+              <div className="flex flex-col gap-1.5 max-w-[75%]">
+                <div
+                  className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    msg.role === "user"
+                      ? "bg-blue-600 text-white rounded-br-sm"
+                      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                  }`}
+                >
+                  {msg.content ? (
+                    msg.role === "assistant" ? (
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => (
+                            <p className="mb-2 last:mb-0">{children}</p>
+                          ),
+                          ul: ({ children }) => (
+                            <ul className="list-disc pl-4 mb-2 space-y-1">
+                              {children}
+                            </ul>
+                          ),
+                          ol: ({ children }) => (
+                            <ol className="list-decimal pl-4 mb-2 space-y-1">
+                              {children}
+                            </ol>
+                          ),
+                          li: ({ children }) => <li>{children}</li>,
+                          strong: ({ children }) => (
+                            <strong className="font-semibold">
+                              {children}
+                            </strong>
+                          ),
+                          code: ({ children }) => (
+                            <code className="bg-gray-100 rounded px-1 py-0.5 text-xs">
+                              {children}
+                            </code>
+                          ),
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    ) : (
+                      msg.content
+                    )
                   ) : (
-                    msg.content
-                  )
-                ) : (
-                  <span className="inline-flex gap-1 items-center text-gray-400">
-                    <span className="animate-bounce [animation-delay:0ms]">
-                      ●
+                    <span className="inline-flex gap-1 items-center text-gray-400">
+                      <span className="animate-bounce [animation-delay:0ms]">
+                        ●
+                      </span>
+                      <span className="animate-bounce [animation-delay:150ms]">
+                        ●
+                      </span>
+                      <span className="animate-bounce [animation-delay:300ms]">
+                        ●
+                      </span>
                     </span>
-                    <span className="animate-bounce [animation-delay:150ms]">
-                      ●
-                    </span>
-                    <span className="animate-bounce [animation-delay:300ms]">
-                      ●
-                    </span>
-                  </span>
+                  )}
+                </div>
+
+                {/* Source citations */}
+                {msg.sources && msg.sources.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 px-1">
+                    {msg.sources.map((source, sIdx) => (
+                      <span
+                        key={sIdx}
+                        className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-1"
+                      >
+                        <svg
+                          className="w-3 h-3 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        {source}
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

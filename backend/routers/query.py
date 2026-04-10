@@ -1,4 +1,5 @@
 from http.client import HTTPException
+import json
 
 from services.openai import OpenAi
 from services.prompt_builder import PromptBuilder
@@ -63,6 +64,9 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
         async for token in OpenAi(prompt).generate():
             full_response += token
             yield token
+
+        sources = list({chunk["filename"] for chunk in chunks})  # deduplicate
+        yield f"\n\n__SOURCES__:{json.dumps({'sources': sources})}"
 
         async with AsyncSessionLocal() as save_db:
             assistant_message = Message(
