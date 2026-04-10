@@ -17,7 +17,7 @@ class RAGPipeline:
             result = await db.execute(
                 text(
                     """
-                SELECT dc.content, dc.embedding <=> :query_vector AS distance
+                SELECT dc.content, d.filename, dc.embedding <=> :query_vector AS distance
                 FROM document_chunks dc
                 JOIN documents d ON dc.document_id = d.id
                 WHERE d.bot_id = :bot_id
@@ -31,5 +31,10 @@ class RAGPipeline:
             rows = result.fetchall()
             # Returns the top 5 most similar chunks with their content and similarity score
             return [
-                {"content": row.content, "similarity": row.distance} for row in rows
+                {
+                    "content": row.content,
+                    "filename": row.filename,
+                    "similarity": row.distance,
+                }
+                for row in rows
             ]
