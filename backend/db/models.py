@@ -111,6 +111,7 @@ class Message(Base):
     role: Mapped[str] = mapped_column(String, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+    had_fallback: Mapped[bool] = mapped_column(Boolean, default=False)
 
     conversation: Mapped["Conversation"] = relationship(
         "Conversation", back_populates="messages"

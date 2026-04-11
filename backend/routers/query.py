@@ -1,9 +1,8 @@
-from http.client import HTTPException
 import json
 
 from services.openai import OpenAi
 from services.prompt_builder import PromptBuilder
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from services.rag import RAGPipeline
 from pydantic import BaseModel
 from db.models import Bot, Conversation, Message
@@ -73,6 +72,19 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
             or botObject.hr_contact_email
             or botObject.hr_contact_slack
         ):
+            async with AsyncSessionLocal() as fallback_db:
+                result = await fallback_db.execute(
+                    select(Message)
+                    .where(Message.conversation_id == conversation.id)
+                    .where(Message.role == "user")
+                    .order_by(Message.created_at.desc())
+                    .limit(1)
+                )
+                user_flagged_message = result.scalar_one_or_none()
+                if user_flagged_message:
+                    user_flagged_message.had_fallback = True
+                    await fallback_db.commit()
+
             hr = {
                 "name": botObject.hr_contact_name,
                 "email": botObject.hr_contact_email,

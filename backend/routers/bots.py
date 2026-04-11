@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from db.models import Bot
+from db.models import Bot, Conversation, Message
 from db.session import get_db
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -45,9 +45,7 @@ async def get_bot(bot_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/{bot_id}")
-async def update_bot(
-    bot_id: str, body: BotUpdate, db: AsyncSession = Depends(get_db)
-):
+async def update_bot(bot_id: str, body: BotUpdate, db: AsyncSession = Depends(get_db)):
     """Update bot configuration."""
     result = await db.execute(select(Bot).where(Bot.id == bot_id))
     bot = result.scalar_one_or_none()
@@ -94,6 +92,26 @@ async def public_bot_info(bot_id: str, db: AsyncSession = Depends(get_db)):
         "welcome_message": bot.welcome_message,
         "created_at": bot.created_at,
     }
+
+
+@router.get("/{bot_id}/fallbacks")
+async def get_fallback_messages(bot_id: str, db: AsyncSession = Depends(get_db)):
+    """Helper function to get fallback messages for a bot."""
+    result = await db.execute(
+        select(Message)
+        .join(Conversation)
+        .where(Conversation.bot_id == bot_id)
+        .where(Message.had_fallback == True)
+    )
+    messages = result.scalars().all()
+    return [
+        {
+            "conversation_id": str(message.conversation_id),
+            "content": message.content,
+            "created_at": message.created_at,
+        }
+        for message in messages
+    ]
 
 
 @router.get("/{bot_id}/hr-contact")
