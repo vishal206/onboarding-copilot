@@ -2,16 +2,54 @@
 
 import { UserButton, useUser } from "@clerk/nextjs";
 import FileUpload from "@/components/FileUpload";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DocumentList from "@/components/DocumentList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import Link from "next/link";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
+
+interface AnalyticsData {
+  total_conversations: number;
+  total_messages: number;
+  fallback_rate: number;
+  messages_per_day: { date: string; count: number }[];
+}
+
+function StatCard({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <p className="text-sm text-gray-500 mb-1">{label}</p>
+      <p className="text-3xl font-bold text-gray-800">{value}</p>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { user } = useUser();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${TEST_BOT_ID}/analytics`)
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => setAnalytics(data))
+      .catch(() => {});
+  }, []);
+
+  const chartData = analytics?.messages_per_day.map((d) => ({
+    date: d.date.slice(5),
+    count: d.count,
+  }));
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -19,10 +57,16 @@ export default function DashboardPage() {
       <nav className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-gray-800">Onboarding Co-Pilot</h1>
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/fallbacks" className="text-sm text-gray-500 hover:text-gray-800">
+          <Link
+            href="/dashboard/fallbacks"
+            className="text-sm text-gray-500 hover:text-gray-800"
+          >
             Unanswered Questions
           </Link>
-          <Link href="/dashboard/settings" className="text-sm text-gray-500 hover:text-gray-800">
+          <Link
+            href="/dashboard/settings"
+            className="text-sm text-gray-500 hover:text-gray-800"
+          >
             Settings
           </Link>
           <UserButton />
@@ -38,18 +82,52 @@ export default function DashboardPage() {
           {`You're logged in as ${user?.emailAddresses[0].emailAddress}`}
         </p>
 
-        {/* Placeholder cards */}
-        <div className="grid grid-cols-3 gap-6 mb-10">
-          {["Your Bots", "Documents", "Analytics"].map((item) => (
-            <div
-              key={item}
-              className="bg-white rounded-xl border border-gray-200 p-6"
-            >
-              <h3 className="font-semibold text-gray-700">{item}</h3>
-              <p className="text-gray-400 text-sm mt-1">Coming soon</p>
+        {/* Analytics */}
+        {analytics && (
+          <div className="mb-10">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Analytics</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <StatCard label="Total Conversations" value={analytics.total_conversations} />
+              <StatCard label="Total Messages" value={analytics.total_messages} />
+              <StatCard label="Fallback Rate" value={`${analytics.fallback_rate}%`} />
             </div>
-          ))}
-        </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <p className="text-sm font-medium text-gray-600 mb-4">Messages per Day (Last 30 Days)</p>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    tickLine={false}
+                    interval={4}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "8px",
+                      border: "1px solid #e5e7eb",
+                      fontSize: "13px",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#6366f1"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
 
         {/* File Upload */}
         <h3 className="text-xl font-semibold text-gray-800 mb-4">
