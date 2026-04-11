@@ -18,8 +18,19 @@ class PromptBuilder:
         """Builds a prompt for the LLM in the format of a list of messages with role and content."""
         prompt = []
 
-        # bot's system prompt and the retrieved context chunks
-        context = "\n\n".join([chunk["content"] for chunk in self.chunks])
+        if self.chunks:
+            # bot's system prompt and the retrieved context chunks
+            context = "\n\n".join([chunk["content"] for chunk in self.chunks])
+        else:
+            has_hr = any([
+                getattr(self.bot, "hr_contact_name", None),
+                getattr(self.bot, "hr_contact_email", None),
+                getattr(self.bot, "hr_contact_slack", None),
+            ])
+            if has_hr:
+                context = "No relevant information found in the documents. Let the user know you don't have that information and that HR can help — their contact details are shown below."
+            else:
+                context = "No relevant information found in the documents. Tell the user to contact HR for more information."
 
         system_message = {
             "role": "system",
