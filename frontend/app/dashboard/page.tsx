@@ -6,6 +6,7 @@ import { useState } from "react";
 import DocumentList from "@/components/DocumentList";
 import ChatWindow from "@/components/chat/ChatWindow";
 import HRContactForm from "@/components/HRContactForm";
+import Link from "next/link";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -26,7 +27,12 @@ export default function DashboardPage() {
       {/* Top navigation bar */}
       <nav className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-gray-800">Onboarding Co-Pilot</h1>
-        <UserButton />
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard/settings" className="text-sm text-gray-500 hover:text-gray-800">
+            Settings
+          </Link>
+          <UserButton />
+        </div>
       </nav>
 
       {/* Main content */}
