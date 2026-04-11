@@ -3,8 +3,9 @@ from pydantic import BaseModel
 from typing import Optional
 from db.models import Bot, Conversation, Message
 from db.session import get_db
-from sqlalchemy import select
+from sqlalchemy import select, func, cast, Date, Integer
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/bots", tags=["bots"])
 
@@ -112,6 +113,65 @@ async def get_fallback_messages(bot_id: str, db: AsyncSession = Depends(get_db))
         }
         for message in messages
     ]
+
+
+@router.get("/{bot_id}/analytics")
+async def get_bot_analytics(bot_id: str, db: AsyncSession = Depends(get_db)):
+    """Get analytics for a bot: total conversations, messages per day (last 30 days), fallback rate."""
+    # Verify bot exists
+    bot_result = await db.execute(select(Bot).where(Bot.id == bot_id))
+    if not bot_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Bot not found")
+
+    # Total conversations
+    conv_count_result = await db.execute(
+        select(func.count(Conversation.id)).where(Conversation.bot_id == bot_id)
+    )
+    total_conversations = conv_count_result.scalar() or 0
+
+    # Total user messages and fallback count (had_fallback is set on assistant messages)
+    msg_stats_result = await db.execute(
+        select(
+            func.count(Message.id).filter(Message.role == "user"),
+            func.sum(cast(Message.had_fallback, Integer)).filter(Message.role == "user"),
+        )
+        .join(Conversation, Message.conversation_id == Conversation.id)
+        .where(Conversation.bot_id == bot_id)
+    )
+    row = msg_stats_result.one()
+    total_messages = row[0] or 0
+    fallback_count = row[1] or 0
+    fallback_rate = round((fallback_count / total_messages * 100), 1) if total_messages > 0 else 0.0
+
+    # User messages per day for last 30 days
+    since = datetime.utcnow() - timedelta(days=29)
+    daily_result = await db.execute(
+        select(
+            cast(Message.created_at, Date).label("day"),
+            func.count(Message.id).label("count"),
+        )
+        .join(Conversation, Message.conversation_id == Conversation.id)
+        .where(Conversation.bot_id == bot_id)
+        .where(Message.role == "user")
+        .where(Message.created_at >= since)
+        .group_by(cast(Message.created_at, Date))
+        .order_by(cast(Message.created_at, Date))
+    )
+    daily_rows = daily_result.all()
+
+    # Fill in zeros for missing days
+    daily_map = {str(r.day): r.count for r in daily_rows}
+    messages_per_day = []
+    for i in range(30):
+        day = (since + timedelta(days=i)).date()
+        messages_per_day.append({"date": str(day), "count": daily_map.get(str(day), 0)})
+
+    return {
+        "total_conversations": total_conversations,
+        "total_messages": total_messages,
+        "fallback_rate": fallback_rate,
+        "messages_per_day": messages_per_day,
+    }
 
 
 @router.get("/{bot_id}/hr-contact")
