@@ -60,6 +60,7 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
 
     async def stream_and_save():
         full_response = ""
+        had_fallback = False
 
         async for token in OpenAi(prompt).generate():
             full_response += token
@@ -73,6 +74,7 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
             or botObject.hr_contact_email
             or botObject.hr_contact_slack
         ):
+            had_fallback = True
             hr = {
                 "name": botObject.hr_contact_name,
                 "email": botObject.hr_contact_email,
@@ -85,6 +87,7 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
                 conversation_id=str(conversation.id),
                 role="assistant",
                 content=full_response,
+                had_fallback=had_fallback,
             )
             save_db.add(assistant_message)
             await save_db.commit()
