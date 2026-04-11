@@ -68,6 +68,18 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
         sources = list({chunk["filename"] for chunk in chunks})  # deduplicate
         yield f"\n\n__SOURCES__:{json.dumps({'sources': sources})}"
 
+        if not chunks and (
+            botObject.hr_contact_name
+            or botObject.hr_contact_email
+            or botObject.hr_contact_slack
+        ):
+            hr = {
+                "name": botObject.hr_contact_name,
+                "email": botObject.hr_contact_email,
+                "slack": botObject.hr_contact_slack,
+            }
+            yield f"\n\n__HR_CONTACT__:{json.dumps(hr)}"
+
         async with AsyncSessionLocal() as save_db:
             assistant_message = Message(
                 conversation_id=str(conversation.id),

@@ -37,4 +37,5 @@ class RAGPipeline:
                     "similarity": row.distance,
                 }
                 for row in rows
+                if row.distance < 0.8
             ]

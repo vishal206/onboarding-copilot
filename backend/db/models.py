@@ -38,6 +38,10 @@ class Bot(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
 
+    hr_contact_name: Mapped[str] = mapped_column(String, nullable=True)
+    hr_contact_email: Mapped[str] = mapped_column(String, nullable=True)
+    hr_contact_slack: Mapped[str] = mapped_column(String, nullable=True)
+
     user: Mapped["User"] = relationship("User", back_populates="bots")
     documents: Mapped[list["Document"]] = relationship("Document", back_populates="bot")
     conversations: Mapped[list["Conversation"]] = relationship(

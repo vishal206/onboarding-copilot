@@ -10,10 +10,92 @@ interface BotInfo {
   welcome_message: string | null;
 }
 
+interface HRContact {
+  name: string | null;
+  email: string | null;
+  slack: string | null;
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: string[];
+  hrContact?: HRContact;
+}
+
+function HRContactCard({ contact }: { contact: HRContact }) {
+  return (
+    <>
+      <div className="my-3 border-t border-gray-200" />
+      <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+          HR Contact
+        </p>
+        <p className="font-semibold text-gray-800 text-base">{contact.name}</p>
+        {contact.email && (
+          <a
+            href={`mailto:${contact.email}`}
+            className="flex items-center gap-1.5 mt-1.5 text-blue-600 hover:underline text-sm"
+          >
+            <svg
+              className="w-3.5 h-3.5 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+            {contact.email}
+          </a>
+        )}
+        {contact.slack && (
+          <p className="flex items-center gap-1.5 mt-1.5 text-gray-600 text-sm">
+            <svg
+              className="w-3.5 h-3.5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" />
+            </svg>
+            {contact.slack}
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
+
+function parseBuffer(buffer: string): {
+  content: string;
+  sources: string[];
+  hrContact?: HRContact;
+} {
+  let content = buffer;
+  let sources: string[] = [];
+  let hrContact: HRContact | undefined;
+
+  const sourcesIdx = content.indexOf("\n\n__SOURCES__:");
+  if (sourcesIdx !== -1) {
+    const rest = content.slice(sourcesIdx + "\n\n__SOURCES__:".length);
+    content = content.slice(0, sourcesIdx);
+    const hrIdx = rest.indexOf("\n\n__HR_CONTACT__:");
+    const sourcesRaw = hrIdx !== -1 ? rest.slice(0, hrIdx) : rest;
+    try {
+      sources = JSON.parse(sourcesRaw).sources ?? [];
+    } catch {}
+    if (hrIdx !== -1) {
+      try {
+        hrContact = JSON.parse(rest.slice(hrIdx + "\n\n__HR_CONTACT__:".length));
+      } catch {}
+    }
+  }
+
+  return { content: content.trim(), sources, hrContact };
 }
 
 export default function PublicChatPage({
@@ -31,7 +113,6 @@ export default function PublicChatPage({
   const [sessionId] = useState(() => crypto.randomUUID());
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Fetch public bot info on mount
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${bot_id}/public`)
       .then((res) => {
@@ -47,7 +128,6 @@ export default function PublicChatPage({
       .catch(() => setBotError(true));
   }, [bot_id]);
 
-  // Auto-scroll on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -56,12 +136,11 @@ export default function PublicChatPage({
     const question = input.trim();
     if (!question || loading) return;
 
-    const userMessage: Message = { role: "user", content: question };
     const historyBeforeSend = [...messages];
 
     setMessages((prev) => [
       ...prev,
-      userMessage,
+      { role: "user", content: question },
       { role: "assistant", content: "" },
     ]);
     setInput("");
@@ -90,44 +169,17 @@ export default function PublicChatPage({
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
 
-        // Check if the sources delimiter has arrived yet
-        const delimiterIndex = buffer.indexOf("\n\n__SOURCES__:");
-
-        if (delimiterIndex !== -1) {
-          // Split into answer text and sources JSON
-          const answerText = buffer.slice(0, delimiterIndex);
-          const sourcesRaw = buffer.slice(
-            delimiterIndex + "\n\n__SOURCES__:".length,
-          );
-
-          let sources: string[] = [];
-          try {
-            const parsed = JSON.parse(sourcesRaw);
-            sources = parsed.sources ?? [];
-          } catch {
-            // If JSON is malformed, just show no sources
-          }
-
-          setMessages((prev) => {
-            const updated = [...prev];
-            updated[updated.length - 1] = {
-              role: "assistant",
-              content: answerText,
-              sources,
-            };
-            return updated;
-          });
-        } else {
-          // Still streaming the answer — update content with buffer so far
-          setMessages((prev) => {
-            const updated = [...prev];
-            updated[updated.length - 1] = {
-              role: "assistant",
-              content: buffer,
-            };
-            return updated;
-          });
-        }
+        const parsed = parseBuffer(buffer);
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: parsed.content,
+            sources: parsed.sources,
+            hrContact: parsed.hrContact,
+          };
+          return updated;
+        });
       }
     } catch {
       setMessages((prev) => {
@@ -143,7 +195,6 @@ export default function PublicChatPage({
     }
   };
 
-  // Error state
   if (botError) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -160,7 +211,6 @@ export default function PublicChatPage({
     );
   }
 
-  // Loading state
   if (!bot) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -214,36 +264,41 @@ export default function PublicChatPage({
                 >
                   {msg.content ? (
                     msg.role === "assistant" ? (
-                      <ReactMarkdown
-                        components={{
-                          p: ({ children }) => (
-                            <p className="mb-2 last:mb-0">{children}</p>
-                          ),
-                          ul: ({ children }) => (
-                            <ul className="list-disc pl-4 mb-2 space-y-1">
-                              {children}
-                            </ul>
-                          ),
-                          ol: ({ children }) => (
-                            <ol className="list-decimal pl-4 mb-2 space-y-1">
-                              {children}
-                            </ol>
-                          ),
-                          li: ({ children }) => <li>{children}</li>,
-                          strong: ({ children }) => (
-                            <strong className="font-semibold">
-                              {children}
-                            </strong>
-                          ),
-                          code: ({ children }) => (
-                            <code className="bg-gray-100 rounded px-1 py-0.5 text-xs">
-                              {children}
-                            </code>
-                          ),
-                        }}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
+                      <>
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => (
+                              <p className="mb-2 last:mb-0">{children}</p>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="list-disc pl-4 mb-2 space-y-1">
+                                {children}
+                              </ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol className="list-decimal pl-4 mb-2 space-y-1">
+                                {children}
+                              </ol>
+                            ),
+                            li: ({ children }) => <li>{children}</li>,
+                            strong: ({ children }) => (
+                              <strong className="font-semibold">
+                                {children}
+                              </strong>
+                            ),
+                            code: ({ children }) => (
+                              <code className="bg-gray-100 rounded px-1 py-0.5 text-xs">
+                                {children}
+                              </code>
+                            ),
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                        {msg.hrContact && (
+                          <HRContactCard contact={msg.hrContact} />
+                        )}
+                      </>
                     ) : (
                       msg.content
                     )
