@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import posthog from "posthog-js";
 
 export default function Home() {
   return (
@@ -14,6 +17,7 @@ export default function Home() {
         <Link
           href="/sign-up"
           className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+          onClick={() => posthog.capture("get_started_clicked")}
         >
           Get Started Free
         </Link>

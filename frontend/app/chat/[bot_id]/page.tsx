@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { use } from "react";
 import ReactMarkdown from "react-markdown";
+import posthog from "posthog-js";
 
 interface BotInfo {
   id: string;
@@ -138,6 +139,18 @@ export default function PublicChatPage({
 
     const historyBeforeSend = [...messages];
 
+    const userTurnCount = historyBeforeSend.filter((m) => m.role === "user").length;
+    if (userTurnCount === 0) {
+      posthog.capture("chat_started", { bot_id, session_id: sessionId });
+    }
+
+    posthog.capture("message_sent", {
+      bot_id,
+      session_id: sessionId,
+      message_length: question.length,
+      conversation_turn: userTurnCount + 1,
+    });
+
     setMessages((prev) => [
       ...prev,
       { role: "user", content: question },
@@ -181,7 +194,9 @@ export default function PublicChatPage({
           return updated;
         });
       }
-    } catch {
+    } catch (err) {
+      posthog.capture("public_chat_error", { bot_id, session_id: sessionId });
+      posthog.captureException(err);
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = {

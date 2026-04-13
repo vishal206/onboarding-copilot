@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { FileRejection, useDropzone } from "react-dropzone";
 import { useAuth } from "@clerk/nextjs";
+import posthog from "posthog-js";
 
 const ALLOWED_TYPES = {
   "application/pdf": [".pdf"],
@@ -39,6 +40,13 @@ export default function FileUpload({
         else if (reason === "file-invalid-type")
           setError("Only PDF, DOCX, and TXT files are allowed.");
         else setError("File rejected. Please try again.");
+        posthog.capture("document_upload_failed", {
+          bot_id: botId,
+          failure_reason: reason,
+          file_name: rejectedFiles[0].file.name,
+          file_type: rejectedFiles[0].file.type,
+          file_size: rejectedFiles[0].file.size,
+        });
         return;
       }
 
@@ -77,12 +85,28 @@ export default function FileUpload({
 
         const data = await res.json();
         setDocumentId(data.id);
+        posthog.capture("doc_uploaded", {
+          bot_id: botId,
+          document_id: data.id,
+          file_name: file.name,
+          file_type: file.type,
+          file_size: file.size,
+        });
         onUploadSuccess();
       } catch (err: unknown) {
         const message =
           err instanceof Error
             ? err.message
             : "Something went wrong. Please try again.";
+        posthog.capture("document_upload_failed", {
+          bot_id: botId,
+          failure_reason: "server_error",
+          error_message: message,
+          file_name: file.name,
+          file_type: file.type,
+          file_size: file.size,
+        });
+        posthog.captureException(err);
         setError(message);
       } finally {
         setUploading(false);
