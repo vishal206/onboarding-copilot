@@ -4,8 +4,8 @@ import { UserButton, useUser } from "@clerk/nextjs";
 import FileUpload from "@/components/FileUpload";
 import { useState, useEffect } from "react";
 import DocumentList from "@/components/DocumentList";
-import ChatWindow from "@/components/chat/ChatWindow";
 import Link from "next/link";
+import posthog from "posthog-js";
 import {
   LineChart,
   Line,
@@ -38,10 +38,19 @@ export default function DashboardPage() {
   const { user } = useUser();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  function handleCopyLink() {
+    const url = `${window.location.origin}/chat/${TEST_BOT_ID}`;
+    navigator.clipboard.writeText(url);
+    posthog.capture("link_copied", { bot_id: TEST_BOT_ID, url });
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  }
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${TEST_BOT_ID}/analytics`)
-      .then((res) => res.ok ? res.json() : null)
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => setAnalytics(data))
       .catch(() => {});
   }, []);
@@ -85,14 +94,27 @@ export default function DashboardPage() {
         {/* Analytics */}
         {analytics && (
           <div className="mb-10">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Analytics</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Analytics
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <StatCard label="Total Conversations" value={analytics.total_conversations} />
-              <StatCard label="Total Messages" value={analytics.total_messages} />
-              <StatCard label="Fallback Rate" value={`${analytics.fallback_rate}%`} />
+              <StatCard
+                label="Total Conversations"
+                value={analytics.total_conversations}
+              />
+              <StatCard
+                label="Total Messages"
+                value={analytics.total_messages}
+              />
+              <StatCard
+                label="Fallback Rate"
+                value={`${analytics.fallback_rate}%`}
+              />
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <p className="text-sm font-medium text-gray-600 mb-4">Messages per Day (Last 30 Days)</p>
+              <p className="text-sm font-medium text-gray-600 mb-4">
+                Messages per Day (Last 30 Days)
+              </p>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -129,6 +151,20 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Share link */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <p className="text-sm font-medium text-gray-700">Bot link</p>
+            <p className="text-xs text-gray-400 mt-0.5">{`/chat/${TEST_BOT_ID}`}</p>
+          </div>
+          <button
+            onClick={handleCopyLink}
+            className="text-sm font-medium px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-700"
+          >
+            {linkCopied ? "Copied!" : "Copy Link"}
+          </button>
+        </div>
+
         {/* File Upload */}
         <h3 className="text-xl font-semibold text-gray-800 mb-4">
           Upload Documents
@@ -138,7 +174,6 @@ export default function DashboardPage() {
           onUploadSuccess={() => setRefreshTrigger((prev) => prev + 1)}
         />
         <DocumentList botId={TEST_BOT_ID} refreshTrigger={refreshTrigger} />
-        <ChatWindow botId={TEST_BOT_ID} />
       </div>
     </main>
   );

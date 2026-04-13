@@ -3,6 +3,7 @@
 import { useAuth, UserButton } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import posthog from "posthog-js";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -90,12 +91,22 @@ export default function SettingsPage() {
 
       const updated = await res.json();
       setForm((prev) => ({ ...prev, ...updated }));
+      posthog.capture("bot_settings_saved", {
+        bot_id: TEST_BOT_ID,
+        has_system_prompt: !!form.system_prompt,
+        has_welcome_message: !!form.welcome_message,
+        has_hr_contact: !!form.hr_contact_name,
+      });
       setSaveState("saved");
       setTimeout(() => setSaveState("idle"), 3000);
     } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : "Failed to save changes.",
-      );
+      const message = err instanceof Error ? err.message : "Failed to save changes.";
+      posthog.capture("bot_settings_save_failed", {
+        bot_id: TEST_BOT_ID,
+        error_message: message,
+      });
+      posthog.captureException(err);
+      setErrorMessage(message);
       setSaveState("error");
       setTimeout(() => setSaveState("idle"), 4000);
     }
