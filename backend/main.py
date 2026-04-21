@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from dotenv import load_dotenv
-from routers import documents, webhooks, query, bots
+from routers import documents, webhooks, query, bots, billing
 
 
 from db.session import get_db
@@ -26,6 +26,7 @@ app.include_router(documents.router)
 app.include_router(webhooks.router)
 app.include_router(query.router)
 app.include_router(bots.router)
+app.include_router(billing.router)
 
 
 @app.get("/")
