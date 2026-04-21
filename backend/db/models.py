@@ -22,6 +22,8 @@ class User(Base):
     clerk_user_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
+    plan: Mapped[str] = mapped_column(String, nullable=True, default="free")
+    stripe_customer_id: Mapped[str] = mapped_column(String, nullable=True)
 
     # Relationships — lets you do user.bots to get all bots for this user
     bots: Mapped[list["Bot"]] = relationship("Bot", back_populates="user")
