@@ -1,11 +1,14 @@
 import stripe
 import os
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Depends
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from fastapi import Depends
 from db.session import get_db
 from db.models import User
+from auth import get_current_user_id
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
@@ -38,7 +41,7 @@ async def stripe_webhook(request: Request, db: AsyncSession = Depends(get_db)):
         stripe_customer_id = data.get("customer")
 
         if clerk_user_id:
-            result = await db.execute(select(User).where(User.id == clerk_user_id))
+            result = await db.execute(select(User).where(User.clerk_user_id == clerk_user_id))
             user = result.scalar_one_or_none()
             if user:
                 user.plan = plan
@@ -61,13 +64,55 @@ async def stripe_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     return {"status": "ok"}
 
 
+class CreateCheckoutRequest(BaseModel):
+    plan: str
+    price_id: str
+
+
 @router.post("/create-checkout")
-async def create_checkout_session(request: Request):
-    # Placeholder — will build this on Day 2
-    return {"message": "coming soon"}
+async def create_checkout_session(
+    body: CreateCheckoutRequest,
+    clerk_user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).where(User.clerk_user_id == clerk_user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    try:
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            line_items=[{"price": body.price_id, "quantity": 1}],
+            customer_email=user.email,
+            metadata={"clerk_user_id": clerk_user_id, "plan": body.plan},
+            success_url=f"{FRONTEND_URL}/billing/success",
+            cancel_url=f"{FRONTEND_URL}/billing/cancel",
+        )
+    except stripe.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e.user_message))
+
+    return {"url": session.url}
 
 
 @router.post("/portal")
-async def customer_portal(request: Request):
-    # Placeholder — will build this on Day 2
-    return {"message": "coming soon"}
+async def customer_portal(
+    clerk_user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).where(User.clerk_user_id == clerk_user_id))
+    user = result.scalar_one_or_none()
+
+    if not user or not user.stripe_customer_id:
+        raise HTTPException(status_code=404, detail="No billing account found")
+
+    try:
+        session = stripe.billing_portal.Session.create(
+            customer=user.stripe_customer_id,
+            return_url=f"{FRONTEND_URL}/billing",
+        )
+    except stripe.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e.user_message))
+
+    return {"url": session.url}
