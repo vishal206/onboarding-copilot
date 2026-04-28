@@ -67,6 +67,12 @@ export default function DashboardPage() {
         <h1 className="text-xl font-bold text-gray-800">Onboarding Co-Pilot</h1>
         <div className="flex items-center gap-4">
           <Link
+            href="/pricing"
+            className="text-sm text-gray-500 hover:text-gray-800"
+          >
+            Pricing
+          </Link>
+          <Link
             href="/dashboard/fallbacks"
             className="text-sm text-gray-500 hover:text-gray-800"
           >
