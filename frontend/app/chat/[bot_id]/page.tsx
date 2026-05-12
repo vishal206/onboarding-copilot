@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { use } from "react";
 import ReactMarkdown from "react-markdown";
 import posthog from "posthog-js";
+import { IconSparkles, IconFileText, IconSend } from "@tabler/icons-react";
 
 interface BotInfo {
   id: string;
@@ -24,50 +25,24 @@ interface Message {
   hrContact?: HRContact;
 }
 
-function HRContactCard({ contact }: { contact: HRContact }) {
+function HRFallbackCard({ contact }: { contact: HRContact }) {
   return (
-    <>
-      <div className="my-3 border-t border-gray-200" />
-      <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-          HR Contact
-        </p>
-        <p className="font-semibold text-gray-800 text-base">{contact.name}</p>
-        {contact.email && (
-          <a
-            href={`mailto:${contact.email}`}
-            className="flex items-center gap-1.5 mt-1.5 text-blue-600 hover:underline text-sm"
-          >
-            <svg
-              className="w-3.5 h-3.5 shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              />
-            </svg>
+    <div className="mt-2 rounded-lg px-3.5 py-2.5 text-[13px]" style={{ background: "#FAF0E8", color: "#B5622A" }}>
+      I don&apos;t have an answer for this — reach out to{" "}
+      {contact.name && <strong>{contact.name}</strong>}
+      {contact.email && (
+        <>
+          {" "}at{" "}
+          <a href={`mailto:${contact.email}`} className="underline">
             {contact.email}
           </a>
-        )}
-        {contact.slack && (
-          <p className="flex items-center gap-1.5 mt-1.5 text-gray-600 text-sm">
-            <svg
-              className="w-3.5 h-3.5 shrink-0"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" />
-            </svg>
-            {contact.slack}
-          </p>
-        )}
-      </div>
-    </>
+        </>
+      )}
+      {contact.slack && (
+        <> or <span className="font-mono">{contact.slack}</span> on Slack</>
+      )}
+      .
+    </div>
   );
 }
 
@@ -138,12 +113,11 @@ export default function PublicChatPage({
     if (!question || loading) return;
 
     const historyBeforeSend = [...messages];
-
     const userTurnCount = historyBeforeSend.filter((m) => m.role === "user").length;
+
     if (userTurnCount === 0) {
       posthog.capture("chat_started", { bot_id, session_id: sessionId });
     }
-
     posthog.capture("message_sent", {
       bot_id,
       session_id: sessionId,
@@ -176,8 +150,7 @@ export default function PublicChatPage({
           const updated = [...prev];
           updated[updated.length - 1] = {
             role: "assistant",
-            content:
-              "You've hit your monthly message limit. [Upgrade your plan →](/pricing)",
+            content: "You've hit your monthly message limit. [Upgrade your plan →](/pricing)",
           };
           return updated;
         });
@@ -225,13 +198,13 @@ export default function PublicChatPage({
 
   if (botError) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <main className="min-h-screen bg-muted flex items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-4xl mb-4">🤖</p>
-          <h1 className="text-xl font-semibold text-gray-800 mb-2">
-            Bot not found
-          </h1>
-          <p className="text-gray-500 text-sm">
+          <div className="w-10 h-10 rounded-[10px] bg-ember flex items-center justify-center mx-auto mb-4">
+            <IconSparkles size={18} className="text-white" />
+          </div>
+          <h1 className="text-[20px] font-medium text-ink mb-2">Bot not found</h1>
+          <p className="text-[13px] text-ink-2">
             This link may be invalid or the bot has been removed.
           </p>
         </div>
@@ -241,8 +214,8 @@ export default function PublicChatPage({
 
   if (!bot) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex gap-1.5 items-center text-gray-400 text-sm">
+      <main className="min-h-screen bg-muted flex items-center justify-center">
+        <div className="flex gap-1.5 items-center text-ink-3 text-sm">
           <span className="animate-bounce [animation-delay:0ms]">●</span>
           <span className="animate-bounce [animation-delay:150ms]">●</span>
           <span className="animate-bounce [animation-delay:300ms]">●</span>
@@ -252,120 +225,86 @@ export default function PublicChatPage({
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
-          {bot.name.charAt(0).toUpperCase()}
+    <main className="h-screen bg-surface flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center gap-2.5 px-5 py-3 border-b border-line-3 shrink-0 bg-surface">
+          <div className="w-7 h-7 rounded-full bg-ember flex items-center justify-center shrink-0">
+            <IconSparkles size={13} className="text-white" />
+          </div>
+          <span className="text-[13px] font-medium text-ink">{bot.name}</span>
+          <span className="ml-auto text-[11px] text-ink-3">Powered by Onboarding Co-Pilot</span>
         </div>
-        <div>
-          <h1 className="text-sm font-semibold text-gray-800 leading-tight">
-            {bot.name}
-          </h1>
-        </div>
-        <div className="ml-auto text-xs text-gray-400 font-medium">
-          Powered by Onboarding Co-Pilot
-        </div>
-      </nav>
 
-      {/* Chat area */}
-      <div className="flex-1 flex flex-col max-w-2xl w-full mx-auto px-4 py-6 gap-4">
         {/* Messages */}
-        <div className="flex-1 space-y-4 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto px-5 py-5 flex flex-col gap-3">
           {messages.map((msg, idx) => (
             <div
               key={idx}
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {msg.role === "assistant" && (
-                <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0 mr-2 mt-0.5">
-                  {bot.name.charAt(0).toUpperCase()}
+                <div className="w-7 h-7 rounded-full bg-ember flex items-center justify-center shrink-0 mr-2 mt-0.5">
+                  <IconSparkles size={13} className="text-white" />
                 </div>
               )}
-              <div className="flex flex-col gap-1.5 max-w-[75%]">
+
+              <div className="flex flex-col gap-1.5" style={{ maxWidth: msg.role === "user" ? "75%" : "85%" }}>
+                {/* Bubble */}
                 <div
-                  className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                  className={`px-3.5 py-2.5 text-[13px] leading-relaxed ${
                     msg.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-sm"
-                      : "bg-white border border-gray-200 text-gray-800 rounded-bl-sm"
+                      ? "bg-ember text-white"
+                      : "bg-muted text-ink"
                   }`}
+                  style={{
+                    borderRadius: msg.role === "user"
+                      ? "12px 4px 12px 12px"
+                      : "4px 12px 12px 12px",
+                  }}
                 >
                   {msg.content ? (
                     msg.role === "assistant" ? (
-                      <>
-                        <ReactMarkdown
-                          components={{
-                            p: ({ children }) => (
-                              <p className="mb-2 last:mb-0">{children}</p>
-                            ),
-                            ul: ({ children }) => (
-                              <ul className="list-disc pl-4 mb-2 space-y-1">
-                                {children}
-                              </ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol className="list-decimal pl-4 mb-2 space-y-1">
-                                {children}
-                              </ol>
-                            ),
-                            li: ({ children }) => <li>{children}</li>,
-                            strong: ({ children }) => (
-                              <strong className="font-semibold">
-                                {children}
-                              </strong>
-                            ),
-                            code: ({ children }) => (
-                              <code className="bg-gray-100 rounded px-1 py-0.5 text-xs">
-                                {children}
-                              </code>
-                            ),
-                          }}
-                        >
-                          {msg.content}
-                        </ReactMarkdown>
-                        {msg.hrContact && (
-                          <HRContactCard contact={msg.hrContact} />
-                        )}
-                      </>
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                          li: ({ children }) => <li>{children}</li>,
+                          strong: ({ children }) => <strong className="font-medium">{children}</strong>,
+                          code: ({ children }) => (
+                            <code className="bg-subtle rounded px-1 py-0.5 text-[12px] font-mono">{children}</code>
+                          ),
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
                     ) : (
                       msg.content
                     )
                   ) : (
-                    <span className="inline-flex gap-1 items-center text-gray-400">
-                      <span className="animate-bounce [animation-delay:0ms]">
-                        ●
-                      </span>
-                      <span className="animate-bounce [animation-delay:150ms]">
-                        ●
-                      </span>
-                      <span className="animate-bounce [animation-delay:300ms]">
-                        ●
-                      </span>
+                    <span className="inline-flex gap-1 items-center text-ink-3">
+                      <span className="animate-bounce [animation-delay:0ms]">●</span>
+                      <span className="animate-bounce [animation-delay:150ms]">●</span>
+                      <span className="animate-bounce [animation-delay:300ms]">●</span>
                     </span>
                   )}
                 </div>
 
-                {/* Source citations */}
+                {/* HR fallback card */}
+                {msg.role === "assistant" && msg.hrContact && (
+                  <HRFallbackCard contact={msg.hrContact} />
+                )}
+
+                {/* Source citation pills */}
                 {msg.sources && msg.sources.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 px-1">
                     {msg.sources.map((source, sIdx) => (
                       <span
                         key={sIdx}
-                        className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-1"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.75 rounded-full bg-teal-light text-teal-dark"
                       >
-                        <svg
-                          className="w-3 h-3 shrink-0"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
+                        <IconFileText size={11} />
                         {source}
                       </span>
                     ))}
@@ -378,23 +317,26 @@ export default function PublicChatPage({
         </div>
 
         {/* Input bar */}
-        <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 flex gap-3 shadow-sm">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            placeholder="Ask a question..."
-            disabled={loading}
-            className="flex-1 text-sm focus:outline-none disabled:opacity-50 text-gray-800 placeholder:text-gray-400"
-          />
-          <button
-            onClick={sendMessage}
-            disabled={loading || !input.trim()}
-            className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-          >
-            Send
-          </button>
+        <div className="px-4 py-3 border-t border-line-3 shrink-0">
+          <div className="flex gap-2 bg-muted rounded-lg border border-line-2 px-3 py-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+              placeholder="Ask a question…"
+              disabled={loading}
+              className="flex-1 text-[13px] bg-transparent focus:outline-none disabled:opacity-50 text-ink placeholder:text-ink-3"
+            />
+            <button
+              onClick={sendMessage}
+              disabled={loading || !input.trim()}
+              className="bg-ember text-white text-[13px] font-medium px-3 py-1.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0 flex items-center gap-1.5"
+            >
+              <IconSend size={13} />
+              Send
+            </button>
+          </div>
         </div>
       </div>
     </main>

@@ -2,7 +2,6 @@
 
 import { useAuth, UserButton } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -43,58 +42,58 @@ export default function FallbacksPage() {
   }, [getToken]);
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-gray-800">Onboarding Co-Pilot</h1>
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/fallbacks" className="text-sm font-medium text-gray-800">
-            Unanswered Questions
-          </Link>
-          <Link href="/dashboard/settings" className="text-sm text-gray-500 hover:text-gray-800">
-            Settings
-          </Link>
-          <UserButton />
-        </div>
-      </nav>
+    <div className="min-h-screen">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-8 py-4 border-b border-line-3">
+        <h1 className="text-[15px] font-medium text-ink">Fallbacks</h1>
+        <UserButton />
+      </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Unanswered Questions</h2>
-        <p className="text-gray-500 mb-8">
-          Questions your bot couldn't confidently answer, sorted newest first.
+      <div className="max-w-225 mx-auto px-8 py-8">
+        <h2 className="text-[28px] font-medium text-ink mb-1">Unanswered questions</h2>
+        <p className="text-[15px] text-ink-2 mb-8">
+          Questions your bot couldn&apos;t confidently answer, sorted newest first.
         </p>
 
-        {loading && <p className="text-gray-400">Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {loading && (
+          <p className="text-[13px] text-ink-3">Loading…</p>
+        )}
+        {error && (
+          <p className="text-[13px] text-danger-tx">{error}</p>
+        )}
 
         {!loading && !error && messages.length === 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
-            No unanswered questions yet.
+          <div className="bg-muted rounded-xl border border-line-3 p-10 text-center">
+            <p className="text-[15px] font-medium text-ink mb-1">No unanswered questions yet</p>
+            <p className="text-[13px] text-ink-2">
+              When your bot can&apos;t answer something, it&apos;ll show up here so you can fill the gap.
+            </p>
           </div>
         )}
 
         {!loading && !error && messages.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+          <div className="rounded-xl border border-line-3 overflow-hidden">
+            <table className="w-full text-[13px]">
+              <thead className="bg-muted border-b border-line-3">
                 <tr>
-                  <th className="text-left px-6 py-3 text-gray-500 font-medium w-44">Date</th>
-                  <th className="text-left px-6 py-3 text-gray-500 font-medium">Question</th>
+                  <th className="text-left px-5 py-3 text-ink-3 font-medium w-40">Date</th>
+                  <th className="text-left px-5 py-3 text-ink-3 font-medium">Question</th>
                 </tr>
               </thead>
               <tbody>
                 {messages.map((msg, i) => (
                   <tr
                     key={`${msg.conversation_id}-${i}`}
-                    className="border-b border-gray-100 last:border-0 hover:bg-gray-50"
+                    className="border-b border-line-3 last:border-0 hover:bg-muted/50 transition-colors"
                   >
-                    <td className="px-6 py-4 text-gray-400 whitespace-nowrap">
+                    <td className="px-5 py-3.5 text-ink-3 whitespace-nowrap font-mono text-[12px]">
                       {new Date(msg.created_at).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
                       })}
                     </td>
-                    <td className="px-6 py-4 text-gray-700">{msg.content}</td>
+                    <td className="px-5 py-3.5 text-ink-2">{msg.content}</td>
                   </tr>
                 ))}
               </tbody>
@@ -102,6 +101,6 @@ export default function FallbacksPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,12 +1,12 @@
 "use client";
 
 import { UserButton, useUser, useAuth } from "@clerk/nextjs";
-import FileUpload from "@/components/FileUpload";
 import { useState, useEffect } from "react";
-import DocumentList from "@/components/DocumentList";
 import Link from "next/link";
 import posthog from "posthog-js";
-import { PLAN_LABELS, PLAN_MAX_DOCS } from "@/lib/plans";
+import { PLAN_LABELS } from "@/lib/plans";
+import { COLORS } from "@/lib/colors";
+import { IconCopy, IconCheck } from "@tabler/icons-react";
 import {
   LineChart,
   Line,
@@ -19,7 +19,6 @@ import {
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
-
 interface AnalyticsData {
   total_conversations: number;
   total_messages: number;
@@ -27,19 +26,25 @@ interface AnalyticsData {
   messages_per_day: { date: string; count: number }[];
 }
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
+function MetricCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <p className="text-sm text-gray-500 mb-1">{label}</p>
-      <p className="text-3xl font-bold text-gray-800">{value}</p>
+    <div className="bg-muted rounded-lg px-3 py-[10px]">
+      <p className="text-[11px] text-ink-3 mb-1">{label}</p>
+      <p className="text-[20px] font-medium text-ink">{value}</p>
     </div>
   );
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
 }
 
 export default function DashboardPage() {
   const { user } = useUser();
   const { getToken } = useAuth();
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string>("free");
@@ -48,7 +53,6 @@ export default function DashboardPage() {
     typeof window !== "undefined" &&
     localStorage.getItem("free_plan_banner_dismissed") === "1"
   );
-  const [docCount, setDocCount] = useState(0);
 
   function dismissBanner() {
     localStorage.setItem("free_plan_banner_dismissed", "1");
@@ -89,50 +93,40 @@ export default function DashboardPage() {
   }));
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Top navigation bar */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-gray-800">Onboarding Co-Pilot</h1>
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-8 py-4 border-b border-line-3">
+        <p className="text-[15px] font-medium text-ink">
+          {greeting()}, {user?.firstName}
+        </p>
+        <div className="flex items-center gap-3">
           <Link
             href="/pricing"
-            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${PLAN_LABELS[currentPlan]?.className ?? PLAN_LABELS.free.className}`}
+            className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${PLAN_LABELS[currentPlan]?.className ?? PLAN_LABELS.free.className}`}
           >
             {PLAN_LABELS[currentPlan]?.label ?? "Free"} plan
           </Link>
-          <Link
-            href="/dashboard/fallbacks"
-            className="text-sm text-gray-500 hover:text-gray-800"
-          >
-            Unanswered Questions
-          </Link>
-          <Link
-            href="/dashboard/settings"
-            className="text-sm text-gray-500 hover:text-gray-800"
-          >
-            Settings
-          </Link>
           <UserButton />
         </div>
-      </nav>
+      </div>
 
       {/* Free-plan upgrade banner */}
       {planLoaded && currentPlan === "free" && !bannerDismissed && (
-        <div className="bg-amber-50 border-b border-amber-100 px-6 py-2.5 flex items-center justify-between">
-          <p className="text-sm text-amber-700">
-            You&apos;re on the Free plan · limited to 3 documents &amp; 50 messages/month.
+        <div className="bg-warning-bg border-b border-warning-tx/20 px-8 py-2.5 flex items-center justify-between">
+          <p className="text-[13px] text-warning-tx">
+            You&apos;re on the free plan · limited to 3 documents &amp; 50 messages/month.
           </p>
           <div className="flex items-center gap-4 shrink-0 ml-4">
             <Link
               href="/pricing"
-              className="text-sm font-medium text-amber-700 hover:text-amber-900 underline"
+              className="text-[13px] font-medium text-warning-tx hover:opacity-80 underline"
             >
               See pricing →
             </Link>
             <button
               onClick={dismissBanner}
               aria-label="Dismiss banner"
-              className="text-amber-500 hover:text-amber-700 text-lg leading-none"
+              className="text-warning-tx/60 hover:text-warning-tx text-lg leading-none"
             >
               ×
             </button>
@@ -140,50 +134,32 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Main content */}
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          Welcome, {user?.firstName} 👋
-        </h2>
-        <p className="text-gray-500 mb-8">
-          {`You're logged in as ${user?.emailAddresses[0].emailAddress}`}
-        </p>
+      {/* Content */}
+      <div className="max-w-225 mx-auto px-8 py-8">
 
         {/* Analytics */}
         {analytics && (
-          <div className="mb-10">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              Analytics
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <StatCard
-                label="Total Conversations"
-                value={analytics.total_conversations}
-              />
-              <StatCard
-                label="Total Messages"
-                value={analytics.total_messages}
-              />
-              <StatCard
-                label="Fallback Rate"
-                value={`${analytics.fallback_rate}%`}
-              />
+          <section className="mb-8">
+            <h2 className="text-[20px] font-medium text-ink mb-4">Analytics</h2>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <MetricCard label="Total conversations" value={analytics.total_conversations} />
+              <MetricCard label="Total messages" value={analytics.total_messages} />
+              <MetricCard label="Fallback rate" value={`${analytics.fallback_rate}%`} />
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <p className="text-sm font-medium text-gray-600 mb-4">
-                Messages per Day (Last 30 Days)
-              </p>
-              <ResponsiveContainer width="100%" height={220}>
+
+            <div className="bg-muted rounded-xl border border-line-3 p-5">
+              <p className="text-[13px] text-ink-2 mb-4">Messages per day — last 30 days</p>
+              <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-tertiary)" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
                     tickLine={false}
                     interval={4}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
                     tickLine={false}
                     axisLine={false}
                     allowDecimals={false}
@@ -191,61 +167,46 @@ export default function DashboardPage() {
                   <Tooltip
                     contentStyle={{
                       borderRadius: "8px",
-                      border: "1px solid #e5e7eb",
+                      border: "0.5px solid var(--border-secondary)",
                       fontSize: "13px",
+                      background: "var(--bg-primary)",
+                      color: "var(--text-primary)",
                     }}
                   />
                   <Line
                     type="monotone"
                     dataKey="count"
-                    stroke="#6366f1"
-                    strokeWidth={2}
+                    stroke={COLORS.ember}
+                    strokeWidth={1.5}
                     dot={false}
-                    activeDot={{ r: 4 }}
+                    activeDot={{ r: 3, fill: COLORS.ember }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Share link */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <p className="text-sm font-medium text-gray-700">Bot link</p>
-            <p className="text-xs text-gray-400 mt-0.5">{`/chat/${TEST_BOT_ID}`}</p>
+        {/* Bot link */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between bg-muted rounded-xl border border-line-3 px-5 py-4">
+            <div>
+              <p className="text-[13px] font-medium text-ink mb-0.5">Bot link</p>
+              <p className="text-[12px] text-ink-3 font-mono">{`/chat/${TEST_BOT_ID}`}</p>
+            </div>
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-1.5 text-[13px] font-medium px-4 py-2 rounded-lg border border-line-2 bg-surface hover:bg-muted transition-colors text-ink"
+            >
+              {linkCopied
+                ? <><IconCheck size={13} /><span>Copied</span></>
+                : <><IconCopy size={13} /><span>Copy link</span></>
+              }
+            </button>
           </div>
-          <button
-            onClick={handleCopyLink}
-            className="text-sm font-medium px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-700"
-          >
-            {linkCopied ? "Copied!" : "Copy Link"}
-          </button>
-        </div>
+        </section>
 
-        {/* File Upload */}
-        <div className="flex items-baseline justify-between mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">
-            Upload Documents
-          </h3>
-          {PLAN_MAX_DOCS[currentPlan] != null && (
-            <span className="text-sm text-gray-400">
-              {docCount} / {PLAN_MAX_DOCS[currentPlan]} used
-            </span>
-          )}
-        </div>
-        <FileUpload
-          botId={TEST_BOT_ID}
-          onUploadSuccess={() => setRefreshTrigger((prev) => prev + 1)}
-          atLimit={PLAN_MAX_DOCS[currentPlan] != null && docCount >= (PLAN_MAX_DOCS[currentPlan] as number)}
-          maxDocs={PLAN_MAX_DOCS[currentPlan]}
-        />
-        <DocumentList
-          botId={TEST_BOT_ID}
-          refreshTrigger={refreshTrigger}
-          onDocCountChange={setDocCount}
-        />
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IconFileText } from "@tabler/icons-react";
 
 interface Document {
   id: string;
@@ -15,27 +16,29 @@ interface DocumentListProps {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  uploaded: "Uploading...",
-  parsed: "Parsing...",
-  indexed: "Ready",
-  failed: "Failed",
+  uploaded:        "Uploading…",
+  parsed:          "Parsing…",
+  indexed:         "Indexed",
+  failed:          "Failed",
   "indexing failed": "Failed",
 };
 
+/* Tailwind classes for each status pill */
 const STATUS_STYLES: Record<string, string> = {
-  uploaded: "bg-blue-50 text-blue-600",
-  parsed: "bg-yellow-50 text-yellow-600",
-  indexed: "bg-green-50 text-green-600",
-  failed: "bg-red-50 text-red-600",
-  "indexing failed": "bg-red-50 text-red-600",
+  uploaded:          "bg-info-bg text-info-tx",
+  parsed:            "bg-warning-bg text-warning-tx",
+  indexed:           "bg-success-bg text-success-tx",
+  failed:            "bg-danger-bg text-danger-tx",
+  "indexing failed": "bg-danger-bg text-danger-tx",
 };
 
-const STATUS_ICONS: Record<string, string> = {
-  uploaded: "⏳",
-  parsed: "⚙️",
-  indexed: "✅",
-  failed: "❌",
-  "indexing failed": "❌",
+/* Dot color for the status indicator */
+const STATUS_DOT: Record<string, string> = {
+  uploaded:          "bg-info-tx",
+  parsed:            "bg-warning-tx",
+  indexed:           "bg-success-tx",
+  failed:            "bg-danger-tx",
+  "indexing failed": "bg-danger-tx",
 };
 
 export default function DocumentList({
@@ -45,7 +48,6 @@ export default function DocumentList({
 }: DocumentListProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
 
-  // Fetch on mount and whenever a new upload happens
   useEffect(() => {
     const load = async () => {
       const res = await fetch(
@@ -56,11 +58,9 @@ export default function DocumentList({
       setDocuments(data);
       onDocCountChange?.(data.length);
     };
-
     load();
   }, [botId, refreshTrigger]);
 
-  // Poll status for documents that are still processing
   useEffect(() => {
     const processing = documents.filter(
       (d) =>
@@ -68,7 +68,6 @@ export default function DocumentList({
         d.status !== "failed" &&
         d.status !== "indexing failed",
     );
-
     if (processing.length === 0) return;
 
     const interval = setInterval(async () => {
@@ -78,8 +77,6 @@ export default function DocumentList({
       if (!res.ok) return;
       const data = await res.json();
       setDocuments(data);
-
-      // Stop polling if all are done
       const stillProcessing = data.filter(
         (d: Document) =>
           d.status !== "indexed" &&
@@ -95,31 +92,33 @@ export default function DocumentList({
   if (documents.length === 0) return null;
 
   return (
-    <div className="mt-6 space-y-2">
-      <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-        Uploaded Documents
-      </h4>
-      <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white overflow-hidden">
-        {documents.map((doc) => (
-          <div
-            key={doc.id}
-            className="flex items-center justify-between px-4 py-3"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">📄</span>
-              <span className="text-sm font-medium text-gray-700 truncate max-w-xs">
-                {doc.filename}
-              </span>
-            </div>
-            <span
-              className={`text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1 ${STATUS_STYLES[doc.status] ?? "bg-gray-50 text-gray-500"}`}
-            >
-              {STATUS_ICONS[doc.status]}{" "}
-              {STATUS_LABELS[doc.status] ?? doc.status}
-            </span>
+    <div className="mt-4 rounded-xl border border-line-3 overflow-hidden">
+      {documents.map((doc, i) => (
+        <div
+          key={doc.id}
+          className={`flex items-center justify-between px-4 py-3 ${
+            i < documents.length - 1 ? "border-b border-line-3" : ""
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <IconFileText size={14} className="text-ink-3 shrink-0" strokeWidth={1.75} />
+            <span className="text-[13px] text-ink truncate">{doc.filename}</span>
           </div>
-        ))}
-      </div>
+
+          <span
+            className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full shrink-0 ml-3 ${
+              STATUS_STYLES[doc.status] ?? "bg-muted text-ink-3"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                STATUS_DOT[doc.status] ?? "bg-ink-3"
+              }`}
+            />
+            {STATUS_LABELS[doc.status] ?? doc.status}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
