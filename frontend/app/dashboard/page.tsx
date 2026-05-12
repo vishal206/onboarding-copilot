@@ -43,7 +43,17 @@ export default function DashboardPage() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string>("free");
+  const [planLoaded, setPlanLoaded] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(() =>
+    typeof window !== "undefined" &&
+    localStorage.getItem("free_plan_banner_dismissed") === "1"
+  );
   const [docCount, setDocCount] = useState(0);
+
+  function dismissBanner() {
+    localStorage.setItem("free_plan_banner_dismissed", "1");
+    setBannerDismissed(true);
+  }
 
   function handleCopyLink() {
     const url = `${window.location.origin}/chat/${TEST_BOT_ID}`;
@@ -68,7 +78,8 @@ export default function DashboardPage() {
       })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => { if (data?.plan) setCurrentPlan(data.plan); })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setPlanLoaded(true));
     });
   }, [getToken]);
 
@@ -104,6 +115,30 @@ export default function DashboardPage() {
           <UserButton />
         </div>
       </nav>
+
+      {/* Free-plan upgrade banner */}
+      {planLoaded && currentPlan === "free" && !bannerDismissed && (
+        <div className="bg-amber-50 border-b border-amber-100 px-6 py-2.5 flex items-center justify-between">
+          <p className="text-sm text-amber-700">
+            You&apos;re on the Free plan · limited to 3 documents &amp; 50 messages/month.
+          </p>
+          <div className="flex items-center gap-4 shrink-0 ml-4">
+            <Link
+              href="/pricing"
+              className="text-sm font-medium text-amber-700 hover:text-amber-900 underline"
+            >
+              See pricing →
+            </Link>
+            <button
+              onClick={dismissBanner}
+              aria-label="Dismiss banner"
+              className="text-amber-500 hover:text-amber-700 text-lg leading-none"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main content */}
       <div className="max-w-4xl mx-auto px-6 py-12">

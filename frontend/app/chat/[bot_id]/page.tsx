@@ -171,6 +171,19 @@ export default function PublicChatPage({
         }),
       });
 
+      if (res.status === 403) {
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content:
+              "You've hit your monthly message limit. [Upgrade your plan →](/pricing)",
+          };
+          return updated;
+        });
+        return;
+      }
+
       if (!res.ok || !res.body) throw new Error("Failed");
 
       const reader = res.body.getReader();

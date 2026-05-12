@@ -30,12 +30,14 @@ export default function FileUpload({
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [limitError, setLimitError] = useState(false);
   const { getToken } = useAuth();
   const [documentId, setDocumentId] = useState<string>("");
 
   const onDrop = useCallback(
     async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError(null);
+      setLimitError(false);
 
       if (rejectedFiles.length > 0) {
         const reason = rejectedFiles[0].errors[0].code;
@@ -78,6 +80,10 @@ export default function FileUpload({
         );
 
         if (!res.ok) {
+          if (res.status === 403) {
+            setLimitError(true);
+            return;
+          }
           const data = await res.json();
           // detail can be a string or a FastAPI validation array
           const message =
@@ -177,6 +183,14 @@ export default function FileUpload({
         </div>
       </div>
 
+      {limitError && (
+        <p className="mt-2 text-sm text-amber-700">
+          You&apos;ve hit your document limit.{" "}
+          <a href="/pricing" className="font-medium underline hover:text-amber-900">
+            Upgrade your plan →
+          </a>
+        </p>
+      )}
       {error && <p className="mt-2 text-red-500 text-sm">{error}</p>}
     </div>
   );
