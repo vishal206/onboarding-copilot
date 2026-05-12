@@ -315,10 +315,11 @@ export default function PublicChatPage({
           ))}
           <div ref={bottomRef} />
         </div>
+        </div>
 
         {/* Input bar */}
-        <div className="px-4 py-3 border-t border-line-3 shrink-0">
-          <div className="flex gap-2 bg-muted rounded-lg border border-line-2 px-3 py-2">
+        <div className="border-t border-line-3 shrink-0 px-5 py-4 bg-surface">
+          <div className="max-w-2xl mx-auto flex gap-2 bg-muted rounded-lg border border-line-2 px-3 py-2">
             <input
               type="text"
               value={input}
@@ -338,7 +339,6 @@ export default function PublicChatPage({
             </button>
           </div>
         </div>
-      </div>
     </main>
   );
 }
