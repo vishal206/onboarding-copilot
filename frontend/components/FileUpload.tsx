@@ -18,11 +18,15 @@ const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 interface FileUploadProps {
   botId: string;
   onUploadSuccess: () => void;
+  atLimit?: boolean;
+  maxDocs?: number | null;
 }
 
 export default function FileUpload({
   botId,
   onUploadSuccess,
+  atLimit = false,
+  maxDocs,
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -120,8 +124,31 @@ export default function FileUpload({
     accept: ALLOWED_TYPES,
     maxSize: MAX_SIZE,
     multiple: false,
-    disabled: uploading,
+    disabled: uploading || atLimit,
   });
+
+  if (atLimit) {
+    return (
+      <div className="w-full">
+        <div className="border-2 border-dashed border-gray-200 rounded-xl p-10 text-center bg-gray-50">
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-4xl">🔒</span>
+            <p className="text-gray-700 font-medium">Document limit reached</p>
+            <p className="text-gray-400 text-sm">
+              {maxDocs != null
+                ? `Your plan allows up to ${maxDocs} document${maxDocs === 1 ? "" : "s"}.`
+                : "You've reached your plan's document limit."}
+              {" "}
+              <a href="/pricing" className="text-indigo-600 hover:underline font-medium">
+                Upgrade your plan
+              </a>{" "}
+              to upload more.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

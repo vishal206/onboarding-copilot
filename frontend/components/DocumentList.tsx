@@ -10,7 +10,8 @@ interface Document {
 
 interface DocumentListProps {
   botId: string;
-  refreshTrigger: number; // increment this to force a refresh
+  refreshTrigger: number;
+  onDocCountChange?: (count: number) => void;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -40,6 +41,7 @@ const STATUS_ICONS: Record<string, string> = {
 export default function DocumentList({
   botId,
   refreshTrigger,
+  onDocCountChange,
 }: DocumentListProps) {
   const [documents, setDocuments] = useState<Document[]>([]);
 
@@ -52,6 +54,7 @@ export default function DocumentList({
       if (!res.ok) return;
       const data = await res.json();
       setDocuments(data);
+      onDocCountChange?.(data.length);
     };
 
     load();

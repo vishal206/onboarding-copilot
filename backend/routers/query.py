@@ -1,15 +1,17 @@
 import json
+from datetime import datetime
 
 from services.openai import OpenAi
 from services.prompt_builder import PromptBuilder
 from fastapi import APIRouter, Depends, HTTPException
 from services.rag import RAGPipeline
 from pydantic import BaseModel
-from db.models import Bot, Conversation, Message
+from db.models import Bot, Conversation, Message, User
 from db.session import AsyncSessionLocal, get_db
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import StreamingResponse
+from limits import PLAN_LIMITS
 
 router = APIRouter(prefix="/query", tags=["query"])
 
@@ -31,6 +33,30 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
     botObject = result.scalar_one_or_none()
     if not botObject:
         raise HTTPException(status_code=404, detail="Bot not found")
+
+    # Enforce monthly message limit for the bot owner
+    user_result = await db.execute(select(User).where(User.id == botObject.user_id))
+    bot_owner = user_result.scalar_one_or_none()
+    if bot_owner:
+        plan = bot_owner.plan or "free"
+        max_messages = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])["max_messages_per_month"]
+        if max_messages is not None:
+            now = datetime.utcnow()
+            month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            monthly_count_result = await db.execute(
+                select(func.count(Message.id))
+                .join(Conversation, Message.conversation_id == Conversation.id)
+                .join(Bot, Conversation.bot_id == Bot.id)
+                .where(Bot.user_id == bot_owner.id)
+                .where(Message.role == "user")
+                .where(Message.created_at >= month_start)
+            )
+            monthly_count = monthly_count_result.scalar()
+            if monthly_count >= max_messages:
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"Monthly message limit reached. Your {plan} plan allows {max_messages} messages per month. Upgrade your plan to continue.",
+                )
 
     prompt = PromptBuilder(
         bot=botObject,

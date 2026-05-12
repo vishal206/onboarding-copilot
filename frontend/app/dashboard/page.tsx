@@ -1,11 +1,12 @@
 "use client";
 
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton, useUser, useAuth } from "@clerk/nextjs";
 import FileUpload from "@/components/FileUpload";
 import { useState, useEffect } from "react";
 import DocumentList from "@/components/DocumentList";
 import Link from "next/link";
 import posthog from "posthog-js";
+import { PLAN_LABELS, PLAN_MAX_DOCS } from "@/lib/plans";
 import {
   LineChart,
   Line,
@@ -17,6 +18,7 @@ import {
 } from "recharts";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
+
 
 interface AnalyticsData {
   total_conversations: number;
@@ -36,9 +38,12 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<string>("free");
+  const [docCount, setDocCount] = useState(0);
 
   function handleCopyLink() {
     const url = `${window.location.origin}/chat/${TEST_BOT_ID}`;
@@ -55,6 +60,18 @@ export default function DashboardPage() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    getToken().then((token) => {
+      if (!token) return;
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/billing/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => { if (data?.plan) setCurrentPlan(data.plan); })
+        .catch(() => {});
+    });
+  }, [getToken]);
+
   const chartData = analytics?.messages_per_day.map((d) => ({
     date: d.date.slice(5),
     count: d.count,
@@ -68,9 +85,9 @@ export default function DashboardPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/pricing"
-            className="text-sm text-gray-500 hover:text-gray-800"
+            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${PLAN_LABELS[currentPlan]?.className ?? PLAN_LABELS.free.className}`}
           >
-            Pricing
+            {PLAN_LABELS[currentPlan]?.label ?? "Free"} plan
           </Link>
           <Link
             href="/dashboard/fallbacks"
@@ -172,14 +189,27 @@ export default function DashboardPage() {
         </div>
 
         {/* File Upload */}
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">
-          Upload Documents
-        </h3>
+        <div className="flex items-baseline justify-between mb-4">
+          <h3 className="text-xl font-semibold text-gray-800">
+            Upload Documents
+          </h3>
+          {PLAN_MAX_DOCS[currentPlan] != null && (
+            <span className="text-sm text-gray-400">
+              {docCount} / {PLAN_MAX_DOCS[currentPlan]} used
+            </span>
+          )}
+        </div>
         <FileUpload
           botId={TEST_BOT_ID}
           onUploadSuccess={() => setRefreshTrigger((prev) => prev + 1)}
+          atLimit={PLAN_MAX_DOCS[currentPlan] != null && docCount >= (PLAN_MAX_DOCS[currentPlan] as number)}
+          maxDocs={PLAN_MAX_DOCS[currentPlan]}
         />
-        <DocumentList botId={TEST_BOT_ID} refreshTrigger={refreshTrigger} />
+        <DocumentList
+          botId={TEST_BOT_ID}
+          refreshTrigger={refreshTrigger}
+          onDocCountChange={setDocCount}
+        />
       </div>
     </main>
   );

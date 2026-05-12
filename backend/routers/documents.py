@@ -11,12 +11,13 @@ from fastapi import (
     BackgroundTasks,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from db.session import get_db
 from db.models import Document, Bot, DocumentChunk, User
 from services.storage import delete_file, upload_file
 from services.parser import Parser
 from auth import get_current_user_id
+from limits import PLAN_LIMITS
 import uuid
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -52,16 +53,15 @@ async def upload_document(
     result = await db.execute(select(Bot).where(Bot.id == bot_id))
     bot = result.scalar_one_or_none()
 
+    # Resolve user regardless — needed for plan limit check
+    user_result = await db.execute(
+        select(User).where(User.clerk_user_id == clerk_user_id)
+    )
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found in database")
+
     if not bot:
-        # Get internal user ID from clerk_user_id
-        user_result = await db.execute(
-            select(User).where(User.clerk_user_id == clerk_user_id)
-        )
-        user = user_result.scalar_one_or_none()
-
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found in database")
-
         bot = Bot(
             id=bot_id,
             user_id=str(user.id),  # internal UUID, not clerk_user_id
@@ -75,6 +75,20 @@ async def upload_document(
             await db.flush()
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error creating bot: {str(e)}")
+
+    # Enforce doc limit for this bot
+    plan = user.plan or "free"
+    max_docs = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])["max_docs"]
+    if max_docs is not None:
+        doc_count_result = await db.execute(
+            select(func.count()).where(Document.bot_id == bot_id)
+        )
+        doc_count = doc_count_result.scalar()
+        if doc_count >= max_docs:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Document limit reached. Your {plan} plan allows {max_docs} document(s) per bot. Upgrade your plan to add more.",
+            )
 
     # Upload to R2
     file_key = f"{bot_id}/{uuid.uuid4()}_{file.filename}"

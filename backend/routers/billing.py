@@ -64,6 +64,18 @@ async def stripe_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     return {"status": "ok"}
 
 
+@router.get("/me")
+async def get_user_plan(
+    clerk_user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).where(User.clerk_user_id == clerk_user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"plan": user.plan or "free"}
+
+
 class CreateCheckoutRequest(BaseModel):
     plan: str
     price_id: str
