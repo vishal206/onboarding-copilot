@@ -1,8 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
-import { IconSparkles, IconFileText, IconBolt, IconChartBar, IconSearch, IconCheck } from "@tabler/icons-react";
+import {
+  IconArrowRight,
+  IconCheck,
+  IconFileText,
+  IconBolt,
+  IconChartBar,
+  IconSearch,
+  IconPlayerPlay,
+  IconPlus,
+  IconMinus,
+} from "@tabler/icons-react";
 
 const FEATURES = [
   {
@@ -21,13 +32,13 @@ const FEATURES = [
     icon: IconChartBar,
     title: "HR dashboard",
     description:
-      "See which bots are active, how many messages were sent, and how employees are engaging across your org.",
+      "See which bots are active, how many messages were sent, and how employees engage across your org.",
   },
   {
     icon: IconSearch,
     title: "Track what new hires ask",
     description:
-      "Spot knowledge gaps before they become churn. Review question logs to continuously improve your onboarding.",
+      "Spot knowledge gaps before they become churn. Review question logs to continuously improve onboarding.",
   },
 ];
 
@@ -85,178 +96,726 @@ const PLANS = [
   },
 ];
 
-export default function Home() {
+const TICKER_ITEMS = [
+  { text: "new hire answers ", green: false },
+  { text: "instantly", green: true },
+  { text: " · zero HR tickets · deploy in ", green: false },
+  { text: "5 minutes", green: true },
+  { text: " · knowledge gaps ", green: false },
+  { text: "surfaced automatically", green: true },
+  { text: " · onboarding that ", green: false },
+  { text: "scales", green: true },
+  { text: " · ", green: false },
+];
+
+const HOW_STEPS = [
+  {
+    num: "01",
+    title: "Upload your docs",
+    description:
+      "Drop in your employee handbook, SOPs, benefits guides, and any onboarding material. PDF, Word, or plain text — we handle it all.",
+  },
+  {
+    num: "02",
+    title: "Deploy in one click",
+    description:
+      "We generate a custom AI assistant trained on your documents. Share a link with your new hires — no app downloads, no accounts required.",
+  },
+  {
+    num: "03",
+    title: "Hires get instant answers",
+    description:
+      "New hires chat with the bot 24/7 and get cited answers pulled directly from your documents. HR gets notified of trends and gaps.",
+  },
+];
+
+const FAQ_ITEMS = [
+  {
+    q: "How long does setup take?",
+    a: "Under 10 minutes. Upload your docs, review the bot's name and greeting, and share a link. No engineering required.",
+  },
+  {
+    q: "What file types are supported?",
+    a: "PDF, Word (.docx), and plain text files. More formats — including Notion pages and Google Docs — are coming soon.",
+  },
+  {
+    q: "Can I update documents after launching?",
+    a: "Yes. Add, remove, or replace documents at any time from your dashboard. The bot reflects changes immediately.",
+  },
+  {
+    q: "Is my company data secure?",
+    a: "All documents are encrypted at rest and in transit. We never use your data to train shared models. Your knowledge base stays private.",
+  },
+  {
+    q: "Can new hires use the bot without signing up?",
+    a: "Yes. You share a link and they can start chatting instantly — no account creation needed on their end.",
+  },
+  {
+    q: "How does billing work?",
+    a: "Monthly subscription with no contracts. Upgrade, downgrade, or cancel at any time. Unused message credits don't roll over.",
+  },
+];
+
+const NAV_LINKS = [
+  { label: "Features", id: "features" },
+  { label: "How it works", id: "how" },
+  { label: "Pricing", id: "pricing" },
+  { label: "FAQ", id: "faq" },
+];
+
+function OrganicHeroScene() {
   return (
-    <div className="min-h-screen bg-surface flex flex-col">
-      {/* Nav */}
-      <header className="border-b border-line-3 px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-[10px] bg-ember flex items-center justify-center shrink-0">
-            <IconSparkles size={13} className="text-white" />
-          </div>
-          <span className="text-[15px] font-medium text-ink">Onboarding Co-Pilot</span>
-        </div>
-        <nav className="flex items-center gap-6 text-[13px] text-ink-2">
-          <a href="#features" className="hover:text-ink transition-colors">Features</a>
-          <Link href="/pricing" className="hover:text-ink transition-colors">Pricing</Link>
-          <Link href="/sign-in" className="hover:text-ink transition-colors">Sign in</Link>
-          <Link
-            href="/sign-up"
-            className="bg-ember text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity text-[13px] font-medium"
-            onClick={() => posthog.capture("nav_signup_clicked")}
+    <div
+      className="absolute bottom-0 left-0 right-0 overflow-hidden pointer-events-none select-none"
+      style={{ height: "62%" }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(to bottom, transparent 0%, #f2f2f0 35%, #e8e8e5 100%)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-8%",
+          left: "-30%",
+          width: "160%",
+          height: "85%",
+          background:
+            "radial-gradient(ellipse 70% 50% at 50% 100%, #d0d0cc 0%, #dcdcda 28%, transparent 62%)",
+          filter: "blur(22px)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "0",
+          left: "-18%",
+          width: "68%",
+          height: "90%",
+          background:
+            "radial-gradient(ellipse 65% 58% at 35% 100%, #c0c0bc 0%, #d2d2ce 32%, transparent 65%)",
+          filter: "blur(16px)",
+          borderRadius: "50%",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-6%",
+          right: "-22%",
+          width: "72%",
+          height: "95%",
+          background:
+            "radial-gradient(ellipse 65% 54% at 60% 100%, #c4c4c0 0%, #d4d4d0 30%, transparent 65%)",
+          filter: "blur(20px)",
+          borderRadius: "50%",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-6%",
+          left: "18%",
+          width: "64%",
+          height: "62%",
+          background:
+            "radial-gradient(ellipse 80% 68% at 50% 100%, #b4b4b0 0%, #c8c8c4 28%, transparent 58%)",
+          filter: "blur(10px)",
+          borderRadius: "50%",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "48%",
+          background:
+            "linear-gradient(to bottom, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.55) 55%, transparent 100%)",
+        }}
+      />
+      {/* Green sphere 1 */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "36%",
+          left: "17%",
+          width: "88px",
+          height: "88px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle at 33% 28%, #dcfce7 0%, #4ade80 45%, #15803d 100%)",
+          boxShadow:
+            "0 0 55px 22px rgba(74,222,128,0.42), 0 0 110px 45px rgba(74,222,128,0.15)",
+        }}
+      />
+      {/* Green sphere 2 */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "44%",
+          right: "26%",
+          width: "58px",
+          height: "58px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle at 33% 28%, #dcfce7 0%, #4ade80 45%, #15803d 100%)",
+          boxShadow:
+            "0 0 38px 16px rgba(74,222,128,0.38), 0 0 75px 28px rgba(74,222,128,0.13)",
+        }}
+      />
+      {/* Green sphere 3 */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "26%",
+          right: "11%",
+          width: "36px",
+          height: "36px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle at 33% 28%, #dcfce7 0%, #4ade80 45%, #16a34a 100%)",
+          boxShadow:
+            "0 0 24px 10px rgba(74,222,128,0.32), 0 0 50px 20px rgba(74,222,128,0.1)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to right, white 0%, transparent 12%, transparent 88%, white 100%)",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
+  );
+}
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className="border-b"
+      style={{ borderColor: "rgba(0,0,0,0.07)" }}
+    >
+      <button
+        className="w-full flex items-center justify-between py-5 text-left gap-6"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span
+          className="text-[15px] font-medium"
+          style={{ color: "#111", lineHeight: 1.4 }}
+        >
+          {q}
+        </span>
+        <span
+          className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+          style={{
+            background: open ? "#111" : "rgba(0,0,0,0.06)",
+            color: open ? "white" : "#555",
+          }}
+        >
+          {open ? <IconMinus size={12} strokeWidth={2.5} /> : <IconPlus size={12} strokeWidth={2.5} />}
+        </span>
+      </button>
+      <div
+        className="overflow-hidden transition-all"
+        style={{
+          maxHeight: open ? "200px" : "0",
+          opacity: open ? 1 : 0,
+          transition: "max-height 0.35s ease, opacity 0.25s ease",
+        }}
+      >
+        <p
+          className="pb-5 text-[14px] leading-relaxed"
+          style={{ color: "#888" }}
+        >
+          {a}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function scrollTo(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+}
+
+export default function Home() {
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>(".reveal");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -32px 0px" }
+    );
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-white" style={{ fontFamily: "Inter, system-ui, sans-serif" }}>
+
+      {/* ── Full-width header ── */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8"
+        style={{
+          height: "60px",
+          background: "rgba(255,255,255,0.92)",
+          backdropFilter: "blur(16px)",
+          borderBottom: "1px solid rgba(0,0,0,0.07)",
+        }}
+      >
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <div
+            className="w-6 h-6 rounded-md flex items-center justify-center"
+            style={{ background: "#111" }}
           >
-            Get started
-          </Link>
+            <div className="w-2 h-2 rounded-full" style={{ background: "#4ADE80" }} />
+          </div>
+          <span className="text-[14px] font-medium" style={{ color: "#111" }}>
+            Onboarding Co-Pilot
+          </span>
+        </Link>
+
+        {/* Center links */}
+        <nav className="hidden sm:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+          {NAV_LINKS.map((item) => (
+            <button
+              key={item.label}
+              onClick={() => scrollTo(item.id)}
+              className="px-4 py-1.5 rounded-full text-[13px] transition-colors hover:bg-gray-100 cursor-pointer"
+              style={{ color: "#555", background: "none", border: "none" }}
+            >
+              {item.label}
+            </button>
+          ))}
         </nav>
+
+        {/* Sign in */}
+        <Link
+          href="/sign-in"
+          className="text-[13px] font-medium px-4 py-2 rounded-full transition-colors hover:bg-gray-50 shrink-0"
+          style={{ color: "#111", border: "1px solid rgba(0,0,0,0.12)" }}
+        >
+          Sign in
+        </Link>
       </header>
 
-      <main className="flex-1">
-        {/* Hero */}
-        <section className="max-w-4xl mx-auto px-6 py-24 text-center">
-          <div className="inline-flex items-center gap-1.5 bg-ember-light text-ember-dark text-[11px] font-medium px-3 py-1 rounded-full mb-6">
-            <IconSparkles size={11} />
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden" style={{ minHeight: "100svh" }}>
+        <div className="relative z-10 flex flex-col items-center text-center px-6 pt-36">
+          <div
+            className="inline-flex items-center gap-2 mb-8 text-[12px] font-medium px-3 py-1.5 rounded-full"
+            style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}
+          >
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#4ADE80" }} />
             AI-powered onboarding
           </div>
-          <h1 className="text-[44px] sm:text-[56px] font-medium text-ink leading-tight mb-6 tracking-tight">
+
+          <h1
+            style={{
+              fontSize: "clamp(50px, 7.5vw, 92px)",
+              fontWeight: 300,
+              lineHeight: 1.04,
+              letterSpacing: "-0.03em",
+              color: "#111111",
+              maxWidth: "820px",
+            }}
+          >
             New hires get answers.
             <br />
-            <span className="text-ember">HR gets their time back.</span>
+            <span style={{ color: "#4ADE80" }}>HR gets time back.</span>
           </h1>
-          <p className="text-[17px] text-ink-2 max-w-2xl mx-auto mb-10 leading-relaxed">
+
+          <p
+            className="mt-6"
+            style={{ fontSize: "14px", color: "#999", maxWidth: "380px", lineHeight: 1.65 }}
+          >
             Upload your onboarding docs once. Your new hires get an AI assistant
-            that answers questions instantly — 24/7, from your own knowledge base.
+            that answers questions instantly — 24/7, from your knowledge base.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/sign-up"
-              className="bg-ember text-white px-8 py-3.5 rounded-lg font-medium text-[15px] hover:opacity-90 transition-opacity"
-              onClick={() => posthog.capture("hero_start_trial_clicked")}
-            >
-              Start free trial
-            </Link>
-            <Link
-              href="/pricing"
-              className="border border-line-2 text-ink px-8 py-3.5 rounded-lg font-medium text-[15px] hover:bg-muted transition-colors"
-            >
-              See pricing
-            </Link>
-          </div>
-          <p className="mt-4 text-[12px] text-ink-3">No credit card required · Cancel anytime</p>
-        </section>
 
-        {/* Features */}
-        <section id="features" className="bg-muted py-20 border-y border-line-3">
-          <div className="max-w-5xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-[28px] font-medium text-ink mb-3">
-                Everything your onboarding needs
-              </h2>
-              <p className="text-[15px] text-ink-2">
-                Set up in minutes. Your new hires will wonder how they ever managed without it.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {FEATURES.map((f) => (
-                <div key={f.title} className="bg-surface rounded-xl border border-line-3 p-5">
-                  <div className="w-8 h-8 rounded-lg bg-ember-light flex items-center justify-center mb-4">
-                    <f.icon size={15} className="text-ember-dark" strokeWidth={1.75} />
-                  </div>
-                  <h3 className="text-[15px] font-medium text-ink mb-2">{f.title}</h3>
-                  <p className="text-[13px] text-ink-2 leading-relaxed">{f.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+          <Link
+            href="/sign-up"
+            className="mt-8 inline-flex items-center gap-2.5 text-white"
+            style={{
+              background: "#111111",
+              borderRadius: "9999px",
+              padding: "14px 28px",
+              fontSize: "12px",
+              fontWeight: 500,
+              letterSpacing: "0.07em",
+              textTransform: "uppercase",
+            }}
+            onClick={() => posthog.capture("hero_start_trial_clicked")}
+          >
+            Get started
+            <IconArrowRight size={13} />
+          </Link>
 
-        {/* Pricing */}
-        <section id="pricing" className="py-20">
-          <div className="max-w-5xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-[28px] font-medium text-ink mb-3">
-                Simple, transparent pricing
-              </h2>
-              <p className="text-[15px] text-ink-2">
-                Choose the plan that fits your team. Upgrade or cancel anytime.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              {PLANS.map((p) => (
-                <div
-                  key={p.plan}
-                  className={`rounded-xl border p-6 flex flex-col ${
-                    p.highlighted
-                      ? "bg-ember border-ember text-white"
-                      : "bg-surface border-line-3"
-                  }`}
+          <p className="mt-3 text-[11px]" style={{ color: "#ccc" }}>
+            No credit card required · Cancel anytime
+          </p>
+        </div>
+
+        <OrganicHeroScene />
+
+        {/* Floating info card */}
+        <div
+          className="absolute z-20 hidden md:block"
+          style={{
+            bottom: "72px",
+            left: "max(28px, calc(50% - 560px))",
+            background: "white",
+            border: "1px solid rgba(0,0,0,0.08)",
+            borderRadius: "18px",
+            padding: "18px 20px",
+            boxShadow: "0 4px 28px rgba(0,0,0,0.07)",
+            maxWidth: "210px",
+          }}
+        >
+          <p style={{ fontSize: "11px", color: "#aaa", lineHeight: 1.65, marginBottom: "14px" }}>
+            Deploy an AI assistant from your docs in minutes. No engineering needed.
+          </p>
+          <button
+            className="flex items-center justify-center"
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              background: "#111",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            <IconPlayerPlay size={12} color="white" fill="white" />
+          </button>
+        </div>
+      </section>
+
+      {/* ── Marquee ticker ── */}
+      <div
+        className="overflow-hidden"
+        style={{
+          borderTop: "1px solid rgba(0,0,0,0.06)",
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          padding: "22px 0",
+          background: "white",
+        }}
+      >
+        <div className="flex whitespace-nowrap animate-marquee">
+          {[0, 1].map((i) => (
+            <span key={i} className="flex items-baseline shrink-0" style={{ paddingRight: "80px" }}>
+              {TICKER_ITEMS.map((item, j) => (
+                <span
+                  key={j}
+                  style={{
+                    fontSize: "clamp(30px, 4.5vw, 52px)",
+                    fontWeight: 300,
+                    letterSpacing: "-0.025em",
+                    color: item.green ? "#4ADE80" : "#111111",
+                  }}
                 >
-                  {p.highlighted && (
-                    <span className="text-[11px] font-medium text-white/70 mb-2 uppercase tracking-wide">
-                      Most popular
-                    </span>
-                  )}
-                  <h3 className={`text-[20px] font-medium mb-1 ${p.highlighted ? "text-white" : "text-ink"}`}>
-                    {p.name}
-                  </h3>
-                  <div className="flex items-end gap-1 mb-6">
-                    {p.price === 0 ? (
-                      <span className={`text-[32px] font-medium ${p.highlighted ? "text-white" : "text-ink"}`}>
-                        Free
-                      </span>
-                    ) : (
-                      <>
-                        <span className={`text-[32px] font-medium ${p.highlighted ? "text-white" : "text-ink"}`}>
-                          ${p.price}
-                        </span>
-                        <span className={`text-[13px] mb-1.5 ${p.highlighted ? "text-white/60" : "text-ink-3"}`}>
-                          /mo
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <ul className="space-y-2.5 mb-8 flex-1">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-[13px]">
-                        <IconCheck
-                          size={13}
-                          className={`mt-0.5 shrink-0 ${p.highlighted ? "text-white/70" : "text-teal"}`}
-                          strokeWidth={2}
-                        />
-                        <span className={p.highlighted ? "text-white/90" : "text-ink-2"}>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href="/sign-up"
-                    className={`w-full py-2.5 rounded-lg font-medium text-[13px] text-center transition-colors block ${
-                      p.highlighted
-                        ? "bg-white text-ember hover:bg-ember-light"
-                        : "bg-ember text-white hover:opacity-90"
-                    }`}
-                    onClick={() => posthog.capture("pricing_get_started_clicked", { plan: p.plan })}
-                  >
-                    {p.price === 0 ? "Start for free" : `Get ${p.name}`}
-                  </Link>
-                </div>
+                  {item.text}
+                </span>
               ))}
-            </div>
-          </div>
-        </section>
-      </main>
+            </span>
+          ))}
+        </div>
+      </div>
 
-      {/* Footer */}
-      <footer className="border-t border-line-3 px-6 py-8">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-[13px] text-ink-3">
+      {/* ── How it works ── */}
+      <section id="how" className="py-28" style={{ background: "white" }}>
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-16 reveal">
+            <h2
+              style={{
+                fontSize: "clamp(28px, 3.5vw, 42px)",
+                fontWeight: 300,
+                letterSpacing: "-0.025em",
+                color: "#111",
+                lineHeight: 1.1,
+              }}
+            >
+              Up and running in minutes
+            </h2>
+            <p className="mt-3 text-[14px]" style={{ color: "#aaa" }}>
+              No engineering, no integrations, no waiting. Three steps and you're live.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px" style={{ background: "rgba(0,0,0,0.07)", border: "1px solid rgba(0,0,0,0.07)", borderRadius: "20px", overflow: "hidden" }}>
+            {HOW_STEPS.map((step, i) => (
+              <div
+                key={step.num}
+                className="reveal p-8 md:p-10 flex flex-col gap-4"
+                style={{
+                  background: "white",
+                  transitionDelay: `${i * 100}ms`,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "48px",
+                    fontWeight: 200,
+                    letterSpacing: "-0.04em",
+                    lineHeight: 1,
+                    color: "#4ADE80",
+                  }}
+                >
+                  {step.num}
+                </span>
+                <h3
+                  className="text-[17px] font-medium"
+                  style={{ color: "#111" }}
+                >
+                  {step.title}
+                </h3>
+                <p className="text-[13px] leading-relaxed" style={{ color: "#aaa" }}>
+                  {step.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Features ── */}
+      <section id="features" className="py-28" style={{ background: "#fafafa" }}>
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-14 reveal">
+            <h2
+              style={{
+                fontSize: "clamp(28px, 3.5vw, 42px)",
+                fontWeight: 300,
+                letterSpacing: "-0.025em",
+                color: "#111",
+                lineHeight: 1.1,
+              }}
+            >
+              Everything your onboarding needs
+            </h2>
+            <p className="mt-3 text-[14px]" style={{ color: "#aaa" }}>
+              Set up in minutes. Your new hires will wonder how they ever managed without it.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {FEATURES.map((f, i) => (
+              <div
+                key={f.title}
+                className="rounded-2xl p-6 reveal"
+                style={{
+                  background: "white",
+                  border: "1px solid rgba(0,0,0,0.07)",
+                  transitionDelay: `${i * 80}ms`,
+                }}
+              >
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center mb-5"
+                  style={{ background: "#f0fdf4" }}
+                >
+                  <f.icon size={16} style={{ color: "#16a34a" }} strokeWidth={1.75} />
+                </div>
+                <h3 className="text-[15px] font-medium mb-2" style={{ color: "#111" }}>
+                  {f.title}
+                </h3>
+                <p className="text-[13px] leading-relaxed" style={{ color: "#aaa" }}>
+                  {f.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing ── */}
+      <section id="pricing" className="py-28" style={{ background: "white" }}>
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-14 reveal">
+            <h2
+              style={{
+                fontSize: "clamp(28px, 3.5vw, 42px)",
+                fontWeight: 300,
+                letterSpacing: "-0.025em",
+                color: "#111",
+                lineHeight: 1.1,
+              }}
+            >
+              Simple, transparent pricing
+            </h2>
+            <p className="mt-3 text-[14px]" style={{ color: "#aaa" }}>
+              Choose the plan that fits your team. Upgrade or cancel anytime.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {PLANS.map((p, i) => (
+              <div
+                key={p.plan}
+                className="rounded-2xl p-6 flex flex-col reveal"
+                style={{
+                  ...(p.highlighted
+                    ? { background: "#111111", border: "1px solid #111" }
+                    : { background: "white", border: "1px solid rgba(0,0,0,0.08)" }),
+                  transitionDelay: `${i * 80}ms`,
+                }}
+              >
+                {p.highlighted && (
+                  <span
+                    className="text-[10px] font-medium uppercase tracking-widest mb-2"
+                    style={{ color: "#4ADE80" }}
+                  >
+                    Most popular
+                  </span>
+                )}
+                <h3
+                  className="text-[20px] font-medium mb-1"
+                  style={{ color: p.highlighted ? "white" : "#111" }}
+                >
+                  {p.name}
+                </h3>
+                <div className="flex items-end gap-1 mb-7">
+                  {p.price === 0 ? (
+                    <span
+                      className="text-[32px] font-light"
+                      style={{ color: p.highlighted ? "white" : "#111" }}
+                    >
+                      Free
+                    </span>
+                  ) : (
+                    <>
+                      <span
+                        className="text-[32px] font-light"
+                        style={{ color: p.highlighted ? "white" : "#111" }}
+                      >
+                        ${p.price}
+                      </span>
+                      <span
+                        className="text-[13px] mb-2"
+                        style={{ color: p.highlighted ? "rgba(255,255,255,0.4)" : "#ccc" }}
+                      >
+                        /mo
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                <ul className="space-y-2.5 mb-8 flex-1">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-[13px]">
+                      <IconCheck
+                        size={13}
+                        className="mt-0.5 shrink-0"
+                        style={{ color: "#4ADE80" }}
+                        strokeWidth={2.5}
+                      />
+                      <span style={{ color: p.highlighted ? "rgba(255,255,255,0.75)" : "#888" }}>
+                        {f}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/sign-up"
+                  className="w-full py-2.5 rounded-full text-[13px] font-medium text-center transition-opacity block hover:opacity-80"
+                  style={
+                    p.highlighted
+                      ? { background: "#4ADE80", color: "#111" }
+                      : { background: "#111", color: "white" }
+                  }
+                  onClick={() => posthog.capture("pricing_get_started_clicked", { plan: p.plan })}
+                >
+                  {p.price === 0 ? "Start for free" : `Get ${p.name}`}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section id="faq" className="py-28" style={{ background: "#fafafa" }}>
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="text-center mb-14 reveal">
+            <h2
+              style={{
+                fontSize: "clamp(28px, 3.5vw, 42px)",
+                fontWeight: 300,
+                letterSpacing: "-0.025em",
+                color: "#111",
+                lineHeight: 1.1,
+              }}
+            >
+              Common questions
+            </h2>
+            <p className="mt-3 text-[14px]" style={{ color: "#aaa" }}>
+              Everything you need to know before getting started.
+            </p>
+          </div>
+
+          <div
+            className="reveal rounded-2xl overflow-hidden"
+            style={{ background: "white", border: "1px solid rgba(0,0,0,0.07)", padding: "0 28px" }}
+          >
+            {FAQ_ITEMS.map((item) => (
+              <FaqItem key={item.q} q={item.q} a={item.a} />
+            ))}
+          </div>
+
+          <p className="text-center mt-8 text-[13px]" style={{ color: "#bbb" }}>
+            Still have questions?{" "}
+            <a href="mailto:hello@onboardingcopilot.com" className="underline hover:text-[#111] transition-colors" style={{ color: "#888" }}>
+              Email us
+            </a>
+          </p>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer
+        className="px-8 py-10"
+        style={{ borderTop: "1px solid rgba(0,0,0,0.06)", background: "white" }}
+      >
+        <div
+          className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4"
+          style={{ fontSize: "13px", color: "#bbb" }}
+        >
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-ember flex items-center justify-center">
-              <IconSparkles size={10} className="text-white" />
+            <div
+              className="w-5 h-5 rounded-md flex items-center justify-center"
+              style={{ background: "#111" }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#4ADE80" }} />
             </div>
-            <span className="font-medium text-ink-2">Onboarding Co-Pilot</span>
+            <span className="font-medium" style={{ color: "#555" }}>
+              Onboarding Co-Pilot
+            </span>
           </div>
           <nav className="flex gap-6">
-            <Link href="/pricing" className="hover:text-ink transition-colors">Pricing</Link>
-            <Link href="/sign-in" className="hover:text-ink transition-colors">Sign in</Link>
-            <Link href="/sign-up" className="hover:text-ink transition-colors">Sign up</Link>
+            <button
+              onClick={() => scrollTo("pricing")}
+              className="hover:text-[#111] transition-colors cursor-pointer"
+              style={{ background: "none", border: "none", color: "inherit", fontSize: "inherit" }}
+            >
+              Pricing
+            </button>
+            <Link href="/sign-in" className="hover:text-[#111] transition-colors">
+              Sign in
+            </Link>
+            <Link href="/sign-up" className="hover:text-[#111] transition-colors">
+              Sign up
+            </Link>
           </nav>
           <span>© {new Date().getFullYear()} Onboarding Co-Pilot</span>
         </div>
