@@ -13,13 +13,13 @@ export default function BillingCancelPage() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/pricing"
-            className="inline-block bg-indigo-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-indigo-700 transition-colors"
+            className="inline-block bg-ember text-white font-medium px-6 py-3 rounded-full text-[14px] hover:opacity-80 transition-opacity"
           >
             View Plans
           </Link>
           <Link
             href="/dashboard"
-            className="inline-block bg-white text-gray-700 font-semibold px-6 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+            className="inline-block bg-white text-ink font-medium px-6 py-3 rounded-full text-[14px] border border-line-2 hover:bg-muted transition-colors"
           >
             Back to Dashboard
           </Link>

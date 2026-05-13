@@ -14,7 +14,7 @@ export default function BillingSuccessPage() {
         </p>
         <Link
           href="/dashboard"
-          className="inline-block bg-indigo-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center gap-2 bg-ember text-white font-medium px-6 py-3 rounded-full text-[14px] hover:opacity-80 transition-opacity"
         >
           Go to Dashboard
         </Link>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { use } from "react";
 import ReactMarkdown from "react-markdown";
 import posthog from "posthog-js";
-import { IconSparkles, IconFileText, IconSend } from "@tabler/icons-react";
+import { IconFileText, IconSend } from "@tabler/icons-react";
 
 interface BotInfo {
   id: string;
@@ -27,7 +27,7 @@ interface Message {
 
 function HRFallbackCard({ contact }: { contact: HRContact }) {
   return (
-    <div className="mt-2 rounded-lg px-3.5 py-2.5 text-[13px]" style={{ background: "#FAF0E8", color: "#B5622A" }}>
+    <div className="mt-2 rounded-lg px-3.5 py-2.5 text-[13px] bg-ember-light text-ember-dark">
       I don&apos;t have an answer for this — reach out to{" "}
       {contact.name && <strong>{contact.name}</strong>}
       {contact.email && (
@@ -200,8 +200,8 @@ export default function PublicChatPage({
     return (
       <main className="min-h-screen bg-muted flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="w-10 h-10 rounded-[10px] bg-ember flex items-center justify-center mx-auto mb-4">
-            <IconSparkles size={18} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-ember flex items-center justify-center mx-auto mb-4">
+            <div className="w-3 h-3 rounded-full bg-teal" />
           </div>
           <h1 className="text-[20px] font-medium text-ink mb-2">Bot not found</h1>
           <p className="text-[13px] text-ink-2">
@@ -228,8 +228,8 @@ export default function PublicChatPage({
     <main className="h-screen bg-surface flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-2.5 px-5 py-3 border-b border-line-3 shrink-0 bg-surface">
-          <div className="w-7 h-7 rounded-full bg-ember flex items-center justify-center shrink-0">
-            <IconSparkles size={13} className="text-white" />
+          <div className="w-7 h-7 rounded-lg bg-ember flex items-center justify-center shrink-0">
+            <div className="w-2 h-2 rounded-full bg-teal" />
           </div>
           <span className="text-[13px] font-medium text-ink">{bot.name}</span>
           <span className="ml-auto text-[11px] text-ink-3">Powered by Onboarding Co-Pilot</span>
@@ -244,8 +244,8 @@ export default function PublicChatPage({
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {msg.role === "assistant" && (
-                <div className="w-7 h-7 rounded-full bg-ember flex items-center justify-center shrink-0 mr-2 mt-0.5">
-                  <IconSparkles size={13} className="text-white" />
+                <div className="w-7 h-7 rounded-lg bg-ember flex items-center justify-center shrink-0 mr-2 mt-0.5">
+                  <div className="w-2 h-2 rounded-full bg-teal" />
                 </div>
               )}
 
@@ -319,7 +319,7 @@ export default function PublicChatPage({
 
         {/* Input bar */}
         <div className="border-t border-line-3 shrink-0 px-5 py-4 bg-surface">
-          <div className="max-w-2xl mx-auto flex gap-2 bg-muted rounded-lg border border-line-2 px-3 py-2">
+          <div className="max-w-2xl mx-auto flex gap-2 bg-muted rounded-full border border-line-2 px-4 py-2">
             <input
               type="text"
               value={input}
@@ -332,7 +332,7 @@ export default function PublicChatPage({
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
-              className="bg-ember text-white text-[13px] font-medium px-3 py-1.5 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0 flex items-center gap-1.5"
+              className="bg-ember text-white text-[13px] font-medium px-4 py-1.5 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0 flex items-center gap-1.5"
             >
               <IconSend size={13} />
               Send

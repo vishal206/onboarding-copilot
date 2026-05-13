@@ -7,7 +7,6 @@ import {
   IconFileText,
   IconAlertCircle,
   IconSettings,
-  IconSparkles,
 } from "@tabler/icons-react";
 
 const NAV_ITEMS = [
@@ -27,8 +26,8 @@ export default function Sidebar() {
     <aside className="w-[180px] shrink-0 flex flex-col bg-muted border-r border-line-3 px-3 py-4 h-screen sticky top-0">
       {/* Logo mark + product name */}
       <div className="flex items-center gap-2 px-[10px] mb-6">
-        <div className="w-7 h-7 rounded-[10px] bg-ember flex items-center justify-center shrink-0">
-          <IconSparkles size={13} className="text-white" />
+        <div className="w-6 h-6 rounded-md bg-[#111] flex items-center justify-center shrink-0">
+          <div className="w-2 h-2 rounded-full bg-teal" />
         </div>
         <span className="text-[13px] font-medium text-ink leading-tight">
           Co-Pilot

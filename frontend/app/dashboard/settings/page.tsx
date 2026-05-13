@@ -4,7 +4,7 @@ import { useAuth, UserButton } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
-import { IconCheck, IconExternalLink } from "@tabler/icons-react";
+import { IconCheck, IconExternalLink, IconSun, IconMoon, IconDeviceLaptop } from "@tabler/icons-react";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -19,10 +19,11 @@ interface BotConfig {
 }
 
 type SaveState = "idle" | "saving" | "saved" | "error";
-type Tab = "bot" | "plan";
+type Tab = "bot" | "plan" | "appearance";
+type ThemeChoice = "light" | "dark" | "system";
 
 const inputClass =
-  "w-full border border-line-2 rounded-lg px-3 py-2 text-[13px] bg-surface text-ink focus:outline-none focus:ring-[3px] focus:ring-ember/20 focus:border-ember/60 transition-shadow placeholder:text-ink-3";
+  "w-full border border-line-2 rounded-lg px-3 py-2 text-[13px] bg-surface text-ink focus:outline-none focus:ring-[3px] focus:ring-teal/25 focus:border-teal/50 transition-shadow placeholder:text-ink-3";
 
 const PLAN_DETAILS: Record<string, {
   label: string;
@@ -77,6 +78,28 @@ export default function SettingsPage() {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [currentPlan, setCurrentPlan] = useState<string>("free");
+  const [themeChoice, setThemeChoice] = useState<ThemeChoice>("system");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("theme") as ThemeChoice | null;
+      if (saved === "light" || saved === "dark") setThemeChoice(saved);
+      else setThemeChoice("system");
+    } catch {}
+  }, []);
+
+  function applyTheme(choice: ThemeChoice) {
+    setThemeChoice(choice);
+    try {
+      if (choice === "system") {
+        localStorage.removeItem("theme");
+        delete document.documentElement.dataset.theme;
+      } else {
+        localStorage.setItem("theme", choice);
+        document.documentElement.dataset.theme = choice;
+      }
+    } catch {}
+  }
 
   useEffect(() => {
     Promise.all([
@@ -165,7 +188,7 @@ export default function SettingsPage() {
         <div className="flex gap-10">
           {/* Sub-nav */}
           <nav className="w-40 shrink-0 flex flex-col gap-0.5 pt-0.5">
-            {(["bot", "plan"] as Tab[]).map((tab) => (
+            {(["bot", "plan", "appearance"] as Tab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -175,7 +198,7 @@ export default function SettingsPage() {
                     : "text-ink-2 hover:text-ink hover:bg-muted/60"
                 }`}
               >
-                {tab === "bot" ? "Bot settings" : "Plan"}
+                {tab === "bot" ? "Bot settings" : tab === "plan" ? "Plan" : "Appearance"}
               </button>
             ))}
           </nav>
@@ -268,7 +291,7 @@ export default function SettingsPage() {
                   <button
                     type="submit"
                     disabled={saveState === "saving"}
-                    className="bg-ember text-white text-[13px] font-medium px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+                    className="bg-ember text-white text-[13px] font-medium px-5 py-2 rounded-full hover:opacity-80 disabled:opacity-50 transition-opacity"
                   >
                     {saveState === "saving" ? "Saving…" : "Save changes"}
                   </button>
@@ -289,6 +312,99 @@ export default function SettingsPage() {
           </>
         )}
 
+        {/* ── Appearance tab ── */}
+        {activeTab === "appearance" && (
+          <div>
+            <h2
+              className="text-ink mb-1"
+              style={{ fontSize: "20px", fontWeight: 300, letterSpacing: "-0.02em" }}
+            >
+              Appearance
+            </h2>
+            <p className="text-[13px] text-ink-2 mb-8">
+              Choose how the dashboard looks. Your preference is saved in this browser.
+            </p>
+
+            <div className="grid grid-cols-3 gap-3">
+              {(
+                [
+                  { value: "light", label: "Light", Icon: IconSun, preview: { bg: "#ffffff", surface: "#f8f8f6", text: "#111110" } },
+                  { value: "system", label: "System", Icon: IconDeviceLaptop, preview: null },
+                  { value: "dark",  label: "Dark",  Icon: IconMoon, preview: { bg: "#0e0e0d", surface: "#1a1a18", text: "#f0f0ee" } },
+                ] as const
+              ).map(({ value, label, Icon, preview }) => {
+                const active = themeChoice === value;
+                return (
+                  <button
+                    key={value}
+                    onClick={() => applyTheme(value)}
+                    className="rounded-2xl border p-5 flex flex-col items-center gap-4 transition-colors"
+                    style={{
+                      border: active ? "1.5px solid #111" : "1px solid rgba(0,0,0,0.08)",
+                      background: active ? "var(--bg-secondary)" : "var(--bg-primary)",
+                    }}
+                  >
+                    {/* Mini UI preview */}
+                    <div
+                      className="w-full rounded-xl overflow-hidden"
+                      style={{
+                        height: "72px",
+                        background: preview ? preview.bg : "linear-gradient(135deg, #ffffff 50%, #0e0e0d 50%)",
+                        border: "1px solid rgba(0,0,0,0.08)",
+                        position: "relative",
+                      }}
+                    >
+                      {preview && (
+                        <>
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              width: "36%",
+                              bottom: 0,
+                              background: preview.surface,
+                              borderRight: "1px solid rgba(128,128,128,0.12)",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "5px",
+                              padding: "8px 6px",
+                            }}
+                          >
+                            <div style={{ width: "60%", height: "6px", borderRadius: "3px", background: preview.text, opacity: 0.15 }} />
+                            {[1,2,3].map(i => (
+                              <div key={i} style={{ width: "80%", height: "5px", borderRadius: "3px", background: preview.text, opacity: 0.08 }} />
+                            ))}
+                          </div>
+                          <div style={{ position: "absolute", left: "40%", right: "8px", top: "10px", display: "flex", flexDirection: "column", gap: "5px" }}>
+                            <div style={{ height: "6px", borderRadius: "3px", background: preview.text, opacity: 0.12, width: "70%" }} />
+                            <div style={{ height: "5px", borderRadius: "3px", background: preview.text, opacity: 0.07, width: "90%" }} />
+                            <div style={{ height: "5px", borderRadius: "3px", background: preview.text, opacity: 0.07, width: "60%" }} />
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Label row */}
+                    <div className="flex items-center gap-1.5">
+                      <Icon size={13} className="text-ink-2" strokeWidth={1.75} />
+                      <span
+                        className="text-[13px]"
+                        style={{ fontWeight: active ? 500 : 400, color: active ? "var(--text-primary)" : "var(--text-secondary)" }}
+                      >
+                        {label}
+                      </span>
+                      {active && (
+                        <IconCheck size={12} strokeWidth={2.5} style={{ color: "#4ADE80" }} />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ── Plan tab ── */}
         {activeTab === "plan" && (
           <div className="space-y-6">
@@ -302,7 +418,7 @@ export default function SettingsPage() {
                 </div>
                 <Link
                   href="/pricing"
-                  className="flex items-center gap-1.5 text-[13px] font-medium px-4 py-2 rounded-lg bg-ember text-white hover:opacity-90 transition-opacity shrink-0"
+                  className="flex items-center gap-1.5 text-[13px] font-medium px-4 py-2 rounded-full bg-ember text-white hover:opacity-80 transition-opacity shrink-0"
                 >
                   {currentPlan === "free" ? "Upgrade plan" : "Change plan"}
                   <IconExternalLink size={12} />

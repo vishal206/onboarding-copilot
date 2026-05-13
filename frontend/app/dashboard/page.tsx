@@ -196,7 +196,7 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1.5 text-[13px] font-medium px-4 py-2 rounded-lg border border-line-2 bg-surface hover:bg-muted transition-colors text-ink"
+              className="flex items-center gap-1.5 text-[13px] font-medium px-4 py-2 rounded-full border border-line-2 bg-surface hover:bg-muted transition-colors text-ink"
             >
               {linkCopied
                 ? <><IconCheck size={13} /><span>Copied</span></>

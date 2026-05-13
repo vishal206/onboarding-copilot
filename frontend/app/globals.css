@@ -22,20 +22,18 @@
 }
 
 /* ── Adaptive surface tokens (dark) ── */
+/* System preference — suppressed when user explicitly chose light */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg-primary:   #0e0e0d;
     --bg-secondary: #1a1a18;
     --bg-tertiary:  #222221;
-
     --text-primary:   #f0f0ee;
     --text-secondary: #9b9b98;
     --text-tertiary:  #6b6b68;
-
     --border-primary:   #2a2a28;
     --border-secondary: #333330;
     --border-tertiary:  #222220;
-
     --bg-success:   #27500a; --text-success: #c0dd97;
     --bg-warning:   #633806; --text-warning: #fac775;
     --bg-danger:    #501313; --text-danger:  #f09595;
@@ -43,17 +41,34 @@
   }
 }
 
+/* Explicit dark — overrides system when user chose dark */
+:root[data-theme="dark"] {
+  --bg-primary:   #0e0e0d;
+  --bg-secondary: #1a1a18;
+  --bg-tertiary:  #222221;
+  --text-primary:   #f0f0ee;
+  --text-secondary: #9b9b98;
+  --text-tertiary:  #6b6b68;
+  --border-primary:   #2a2a28;
+  --border-secondary: #333330;
+  --border-tertiary:  #222220;
+  --bg-success:   #27500a; --text-success: #c0dd97;
+  --bg-warning:   #633806; --text-warning: #fac775;
+  --bg-danger:    #501313; --text-danger:  #f09595;
+  --bg-info:      #04342c; --text-info:    #9fe1cb;
+}
+
 /* ── Tailwind theme tokens ── */
 @theme inline {
   /* Brand — static */
-  --color-ember:       #E8925A;
-  --color-ember-light: #FAF0E8;
-  --color-ember-dark:  #B5622A;
+  --color-ember:       #111111;
+  --color-ember-light: #f0fdf4;
+  --color-ember-dark:  #15803d;
 
   /* AI accent — static */
-  --color-teal:        #1D9E75;
-  --color-teal-light:  #E1F5EE;
-  --color-teal-dark:   #0F6E56;
+  --color-teal:        #4ADE80;
+  --color-teal-light:  #f0fdf4;
+  --color-teal-dark:   #15803d;
 
   /* Adaptive surfaces → Tailwind bg-surface, text-ink, etc. */
   --color-surface:  var(--bg-primary);

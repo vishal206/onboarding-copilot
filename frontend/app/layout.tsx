@@ -22,7 +22,15 @@ export default function RootLayout({
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/dashboard"
     >
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          {/* Apply saved theme before first paint to avoid flash */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t;}catch(e){}})();`,
+            }}
+          />
+        </head>
         <body className={inter.className}>{children}</body>
       </html>
     </ClerkProvider>
