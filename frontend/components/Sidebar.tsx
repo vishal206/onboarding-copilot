@@ -11,6 +11,7 @@ import {
   IconAlertCircle,
   IconSettings,
   IconSparkles,
+  IconRobot,
 } from "@tabler/icons-react";
 import AppLogo from "@/components/AppLogo";
 
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { label: "Overview",  href: "/dashboard",           icon: IconLayoutDashboard, exact: true  },
   { label: "Documents", href: "/dashboard/documents", icon: IconFileText,        exact: false },
   { label: "Fallbacks", href: "/dashboard/fallbacks", icon: IconAlertCircle,     exact: false },
+  { label: "Bot",       href: "/dashboard/bot",       icon: IconRobot,           exact: false },
 ];
 
 export default function Sidebar() {
