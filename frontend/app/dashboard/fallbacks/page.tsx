@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth, UserButton } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
@@ -43,12 +43,6 @@ export default function FallbacksPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-line-3">
-        <h1 className="text-[17px] font-medium text-ink">Fallbacks</h1>
-        <UserButton />
-      </div>
-
       <div className="max-w-225 mx-auto px-8 py-8">
         <h2 className="text-[32px] font-medium text-ink mb-1">Unanswered questions</h2>
         <p className="text-[17px] text-ink-2 mb-8">

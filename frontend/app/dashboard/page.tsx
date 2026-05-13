@@ -1,11 +1,10 @@
 "use client";
 
-import { UserButton, useUser, useAuth } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import ReactMarkdown from "react-markdown";
-import { PLAN_LABELS } from "@/lib/plans";
 import { COLORS } from "@/lib/colors";
 import {
   IconCopy,
@@ -352,15 +351,7 @@ function ChatPreview({ bot }: { bot: BotInfo }) {
   );
 }
 
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
-}
-
 export default function DashboardPage() {
-  const { user } = useUser();
   const { getToken } = useAuth();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [bot, setBot] = useState<BotInfo | null>(null);
@@ -420,22 +411,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-line-3 shrink-0">
-        <p className="text-[17px] font-medium text-ink">
-          {greeting()}, {user?.firstName}
-        </p>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/pricing"
-            className={`text-[13px] font-medium px-3 py-1 rounded-full ${PLAN_LABELS[currentPlan]?.className ?? PLAN_LABELS.free.className}`}
-          >
-            {PLAN_LABELS[currentPlan]?.label ?? "Free"} plan
-          </Link>
-          <UserButton />
-        </div>
-      </div>
-
       {/* Free-plan upgrade banner */}
       {planLoaded && currentPlan === "free" && !bannerDismissed && (
         <div className="bg-warning-bg border-b border-warning-tx/20 px-8 py-3 flex items-center justify-between shrink-0">

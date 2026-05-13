@@ -1,11 +1,10 @@
 "use client";
 
-import { useAuth, UserButton } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import FileUpload from "@/components/FileUpload";
 import DocumentList from "@/components/DocumentList";
-import Link from "next/link";
-import { PLAN_LABELS, PLAN_MAX_DOCS } from "@/lib/plans";
+import { PLAN_MAX_DOCS } from "@/lib/plans";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -29,20 +28,6 @@ export default function DocumentsPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-line-3">
-        <h1 className="text-[17px] font-medium text-ink">Documents</h1>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/pricing"
-            className={`text-[13px] font-medium px-3 py-1 rounded-full ${PLAN_LABELS[currentPlan]?.className ?? PLAN_LABELS.free.className}`}
-          >
-            {PLAN_LABELS[currentPlan]?.label ?? "Free"} plan
-          </Link>
-          <UserButton />
-        </div>
-      </div>
-
       <div className="max-w-225 mx-auto px-8 py-8">
         <div className="flex items-baseline justify-between mb-6">
           <div>

@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton, useUser, useAuth } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import { PLAN_LABELS } from "@/lib/plans";
 import {
   IconLayoutDashboard,
   IconFileText,
   IconAlertCircle,
   IconSettings,
+  IconSparkles,
 } from "@tabler/icons-react";
 
 const NAV_ITEMS = [
@@ -17,10 +21,27 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const [currentPlan, setCurrentPlan] = useState<string>("free");
+
+  useEffect(() => {
+    getToken().then((token) => {
+      if (!token) return;
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/billing/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => { if (data?.plan) setCurrentPlan(data.plan); })
+        .catch(() => {});
+    });
+  }, [getToken]);
 
   function isActive(href: string, exact: boolean) {
     return exact ? pathname === href : pathname.startsWith(href);
   }
+
+  const planLabel = PLAN_LABELS[currentPlan] ?? PLAN_LABELS.free;
 
   return (
     <aside className="w-[240px] shrink-0 flex flex-col bg-muted border-r border-line-3 px-4 py-5 h-screen sticky top-0">
@@ -67,6 +88,30 @@ export default function Sidebar() {
         <IconSettings size={18} strokeWidth={1.75} />
         Settings
       </Link>
+
+      {/* User profile card */}
+      <div className="mt-3 bg-surface border border-line-3 rounded-xl px-3 pt-2.5 pb-2 flex flex-col gap-2">
+        <div className="flex items-center gap-2.5">
+          <UserButton />
+          <div className="flex flex-col min-w-0">
+            <span className="text-[13px] font-medium text-ink truncate leading-tight">
+              {user?.fullName ?? user?.firstName ?? ""}
+            </span>
+            <span className="text-[11px] text-ink-3 truncate leading-tight mt-0.5">
+              {user?.primaryEmailAddress?.emailAddress ?? ""}
+            </span>
+          </div>
+        </div>
+
+        {/* Plan pill */}
+        <Link
+          href="/pricing"
+          className={`flex items-center gap-2 w-full rounded-full px-3 py-1.5 text-[12px] font-medium transition-opacity hover:opacity-80 ${planLabel.className}`}
+        >
+          <IconSparkles size={13} />
+          {planLabel.label} plan
+        </Link>
+      </div>
     </aside>
   );
 }
