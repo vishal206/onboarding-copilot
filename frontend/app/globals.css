@@ -118,6 +118,10 @@ html {
   animation: marquee 35s linear infinite;
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(28px);

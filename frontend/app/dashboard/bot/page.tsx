@@ -90,6 +90,7 @@ export default function BotPage() {
         has_welcome_message: !!form.welcome_message,
         has_hr_contact: !!form.hr_contact_name,
       });
+      window.dispatchEvent(new CustomEvent("bot-settings-updated"));
       setSaveState("saved");
       setTimeout(() => setSaveState("idle"), 3000);
     } catch (err) {
@@ -103,10 +104,6 @@ export default function BotPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="flex items-center justify-between px-8 py-5 border-b border-line-3">
-        <h1 className="text-[17px] font-medium text-ink">Bot</h1>
-      </div>
-
       <div className="max-w-2xl mx-auto px-8 py-8">
         {loading ? (
           <p className="text-[15px] text-ink-3">Loading bot config…</p>
