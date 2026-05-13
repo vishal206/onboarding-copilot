@@ -44,28 +44,28 @@ export default function FallbacksPage() {
   return (
     <div className="min-h-screen">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-8 py-4 border-b border-line-3">
-        <h1 className="text-[15px] font-medium text-ink">Fallbacks</h1>
+      <div className="flex items-center justify-between px-8 py-5 border-b border-line-3">
+        <h1 className="text-[17px] font-medium text-ink">Fallbacks</h1>
         <UserButton />
       </div>
 
       <div className="max-w-225 mx-auto px-8 py-8">
-        <h2 className="text-[28px] font-medium text-ink mb-1">Unanswered questions</h2>
-        <p className="text-[15px] text-ink-2 mb-8">
+        <h2 className="text-[32px] font-medium text-ink mb-1">Unanswered questions</h2>
+        <p className="text-[17px] text-ink-2 mb-8">
           Questions your bot couldn&apos;t confidently answer, sorted newest first.
         </p>
 
         {loading && (
-          <p className="text-[13px] text-ink-3">Loading…</p>
+          <p className="text-[15px] text-ink-3">Loading…</p>
         )}
         {error && (
-          <p className="text-[13px] text-danger-tx">{error}</p>
+          <p className="text-[15px] text-danger-tx">{error}</p>
         )}
 
         {!loading && !error && messages.length === 0 && (
           <div className="bg-muted rounded-xl border border-line-3 p-10 text-center">
-            <p className="text-[15px] font-medium text-ink mb-1">No unanswered questions yet</p>
-            <p className="text-[13px] text-ink-2">
+            <p className="text-[17px] font-medium text-ink mb-1">No unanswered questions yet</p>
+            <p className="text-[15px] text-ink-2">
               When your bot can&apos;t answer something, it&apos;ll show up here so you can fill the gap.
             </p>
           </div>
@@ -73,11 +73,11 @@ export default function FallbacksPage() {
 
         {!loading && !error && messages.length > 0 && (
           <div className="rounded-xl border border-line-3 overflow-hidden">
-            <table className="w-full text-[13px]">
+            <table className="w-full text-[15px]">
               <thead className="bg-muted border-b border-line-3">
                 <tr>
-                  <th className="text-left px-5 py-3 text-ink-3 font-medium w-40">Date</th>
-                  <th className="text-left px-5 py-3 text-ink-3 font-medium">Question</th>
+                  <th className="text-left px-5 py-3.5 text-ink-3 font-medium w-44">Date</th>
+                  <th className="text-left px-5 py-3.5 text-ink-3 font-medium">Question</th>
                 </tr>
               </thead>
               <tbody>
@@ -86,7 +86,7 @@ export default function FallbacksPage() {
                     key={`${msg.conversation_id}-${i}`}
                     className="border-b border-line-3 last:border-0 hover:bg-muted/50 transition-colors"
                   >
-                    <td className="px-5 py-3.5 text-ink-3 whitespace-nowrap font-mono text-[12px]">
+                    <td className="px-5 py-3.5 text-ink-3 whitespace-nowrap font-mono text-[13px]">
                       {new Date(msg.created_at).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",

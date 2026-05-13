@@ -30,12 +30,12 @@ export default function DocumentsPage() {
   return (
     <div className="min-h-screen">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-8 py-4 border-b border-line-3">
-        <h1 className="text-[15px] font-medium text-ink">Documents</h1>
+      <div className="flex items-center justify-between px-8 py-5 border-b border-line-3">
+        <h1 className="text-[17px] font-medium text-ink">Documents</h1>
         <div className="flex items-center gap-3">
           <Link
             href="/pricing"
-            className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${PLAN_LABELS[currentPlan]?.className ?? PLAN_LABELS.free.className}`}
+            className={`text-[13px] font-medium px-3 py-1 rounded-full ${PLAN_LABELS[currentPlan]?.className ?? PLAN_LABELS.free.className}`}
           >
             {PLAN_LABELS[currentPlan]?.label ?? "Free"} plan
           </Link>
@@ -46,13 +46,13 @@ export default function DocumentsPage() {
       <div className="max-w-225 mx-auto px-8 py-8">
         <div className="flex items-baseline justify-between mb-6">
           <div>
-            <h2 className="text-[28px] font-medium text-ink mb-1">Documents</h2>
-            <p className="text-[15px] text-ink-2">
+            <h2 className="text-[32px] font-medium text-ink mb-1">Documents</h2>
+            <p className="text-[17px] text-ink-2">
               Upload your onboarding materials. The AI answers from these files.
             </p>
           </div>
           {PLAN_MAX_DOCS[currentPlan] != null && (
-            <span className="text-[13px] text-ink-3 shrink-0 ml-4">
+            <span className="text-[15px] text-ink-3 shrink-0 ml-4">
               {docCount} / {PLAN_MAX_DOCS[currentPlan]} used
             </span>
           )}

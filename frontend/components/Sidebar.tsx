@@ -23,32 +23,32 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-[180px] shrink-0 flex flex-col bg-muted border-r border-line-3 px-3 py-4 h-screen sticky top-0">
+    <aside className="w-[240px] shrink-0 flex flex-col bg-muted border-r border-line-3 px-4 py-5 h-screen sticky top-0">
       {/* Logo mark + product name */}
-      <div className="flex items-center gap-2 px-[10px] mb-6">
-        <div className="w-6 h-6 rounded-md bg-[#111] flex items-center justify-center shrink-0">
-          <div className="w-2 h-2 rounded-full bg-teal" />
+      <div className="flex items-center gap-2.5 px-3 mb-7">
+        <div className="w-7 h-7 rounded-md bg-[#111] flex items-center justify-center shrink-0">
+          <div className="w-2.5 h-2.5 rounded-full bg-teal" />
         </div>
-        <span className="text-[13px] font-medium text-ink leading-tight">
+        <span className="text-[15px] font-medium text-ink leading-tight">
           Co-Pilot
         </span>
       </div>
 
       {/* Nav items */}
-      <nav className="flex-1 flex flex-col gap-0.5">
+      <nav className="flex-1 flex flex-col gap-1">
         {NAV_ITEMS.map(({ label, href, exact, icon: Icon }) => {
           const active = isActive(href, exact);
           return (
             <Link
               key={label}
               href={href}
-              className={`flex items-center gap-2 px-[10px] py-[7px] rounded-lg text-[13px] transition-colors ${
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[15px] transition-colors ${
                 active
                   ? "bg-surface border border-line-3 font-medium text-ink"
                   : "text-ink-2 hover:text-ink hover:bg-surface/60"
               }`}
             >
-              <Icon size={15} strokeWidth={1.75} />
+              <Icon size={18} strokeWidth={1.75} />
               {label}
             </Link>
           );
@@ -58,13 +58,13 @@ export default function Sidebar() {
       {/* Settings pinned to bottom */}
       <Link
         href="/dashboard/settings"
-        className={`flex items-center gap-2 px-[10px] py-[7px] rounded-lg text-[13px] transition-colors ${
+        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[15px] transition-colors ${
           pathname === "/dashboard/settings"
             ? "bg-surface border border-line-3 font-medium text-ink"
             : "text-ink-2 hover:text-ink hover:bg-surface/60"
         }`}
       >
-        <IconSettings size={15} strokeWidth={1.75} />
+        <IconSettings size={18} strokeWidth={1.75} />
         Settings
       </Link>
     </aside>

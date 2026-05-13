@@ -23,7 +23,7 @@ type Tab = "bot" | "plan" | "appearance";
 type ThemeChoice = "light" | "dark" | "system";
 
 const inputClass =
-  "w-full border border-line-2 rounded-lg px-3 py-2 text-[13px] bg-surface text-ink focus:outline-none focus:ring-[3px] focus:ring-teal/25 focus:border-teal/50 transition-shadow placeholder:text-ink-3";
+  "w-full border border-line-2 rounded-lg px-3 py-2.5 text-[15px] bg-surface text-ink focus:outline-none focus:ring-[3px] focus:ring-teal/25 focus:border-teal/50 transition-shadow placeholder:text-ink-3";
 
 const PLAN_DETAILS: Record<string, {
   label: string;
@@ -179,20 +179,20 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-8 py-4 border-b border-line-3">
-        <h1 className="text-[15px] font-medium text-ink">Settings</h1>
+      <div className="flex items-center justify-between px-8 py-5 border-b border-line-3">
+        <h1 className="text-[17px] font-medium text-ink">Settings</h1>
         <UserButton />
       </div>
 
       <div className="max-w-225 mx-auto px-8 py-8">
         <div className="flex gap-10">
           {/* Sub-nav */}
-          <nav className="w-40 shrink-0 flex flex-col gap-0.5 pt-0.5">
+          <nav className="w-48 shrink-0 flex flex-col gap-1 pt-0.5">
             {(["bot", "plan", "appearance"] as Tab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`text-left px-3 py-1.75 rounded-lg text-[13px] transition-colors ${
+                className={`text-left px-3 py-2 rounded-lg text-[15px] transition-colors ${
                   activeTab === tab
                     ? "bg-muted border border-line-3 font-medium text-ink"
                     : "text-ink-2 hover:text-ink hover:bg-muted/60"
@@ -210,18 +210,18 @@ export default function SettingsPage() {
         {activeTab === "bot" && (
           <>
             {loading ? (
-              <p className="text-[13px] text-ink-3">Loading bot config…</p>
+              <p className="text-[15px] text-ink-3">Loading bot config…</p>
             ) : (
               <form onSubmit={handleSave} className="space-y-8">
                 {/* Bot identity */}
                 <section>
-                  <h2 className="text-[20px] font-medium text-ink mb-1">Bot identity</h2>
-                  <p className="text-[13px] text-ink-2 mb-4">
+                  <h2 className="text-[24px] font-medium text-ink mb-1">Bot identity</h2>
+                  <p className="text-[15px] text-ink-2 mb-4">
                     How your bot introduces itself to new hires.
                   </p>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-[13px] font-medium text-ink mb-1.5">Bot name</label>
+                      <label className="block text-[15px] font-medium text-ink mb-1.5">Bot name</label>
                       <input
                         type="text"
                         name="name"
@@ -232,7 +232,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[13px] font-medium text-ink mb-1.5">Welcome message</label>
+                      <label className="block text-[15px] font-medium text-ink mb-1.5">Welcome message</label>
                       <textarea
                         name="welcome_message"
                         value={form.welcome_message}
@@ -241,7 +241,7 @@ export default function SettingsPage() {
                         placeholder="Hi! I'm here to help you get started. Ask me anything about company policies, benefits, or your first week."
                         className={`${inputClass} resize-none`}
                       />
-                      <p className="text-[12px] text-ink-3 mt-1.5">
+                      <p className="text-[13px] text-ink-3 mt-1.5">
                         Shown to new hires when they first open the chat.
                       </p>
                     </div>
@@ -250,8 +250,8 @@ export default function SettingsPage() {
 
                 {/* System prompt */}
                 <section>
-                  <h2 className="text-[20px] font-medium text-ink mb-1">System prompt</h2>
-                  <p className="text-[13px] text-ink-2 mb-4">
+                  <h2 className="text-[24px] font-medium text-ink mb-1">System prompt</h2>
+                  <p className="text-[15px] text-ink-2 mb-4">
                     Instructions that shape how the bot responds. Use this to set tone, focus areas, and what to avoid.
                   </p>
                   <textarea
@@ -260,27 +260,27 @@ export default function SettingsPage() {
                     onChange={handleChange}
                     rows={8}
                     placeholder="You are a helpful onboarding assistant for Acme Corp. Answer questions using only the provided company documents. Be friendly and concise. If you don't know something, say so and offer to connect the employee with HR."
-                    className={`${inputClass} resize-y font-mono text-[12px]`}
+                    className={`${inputClass} resize-y font-mono text-[13px]`}
                   />
                 </section>
 
                 {/* HR fallback contact */}
                 <section>
-                  <h2 className="text-[20px] font-medium text-ink mb-1">HR fallback contact</h2>
-                  <p className="text-[13px] text-ink-2 mb-4">
+                  <h2 className="text-[24px] font-medium text-ink mb-1">HR fallback contact</h2>
+                  <p className="text-[15px] text-ink-2 mb-4">
                     When the bot can&apos;t answer a question, it will suggest reaching out to this person.
                   </p>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-[13px] font-medium text-ink mb-1.5">Name</label>
+                      <label className="block text-[15px] font-medium text-ink mb-1.5">Name</label>
                       <input type="text" name="hr_contact_name" value={form.hr_contact_name} onChange={handleChange} placeholder="Jane Smith" className={inputClass} />
                     </div>
                     <div>
-                      <label className="block text-[13px] font-medium text-ink mb-1.5">Email</label>
+                      <label className="block text-[15px] font-medium text-ink mb-1.5">Email</label>
                       <input type="email" name="hr_contact_email" value={form.hr_contact_email} onChange={handleChange} placeholder="jane@company.com" className={inputClass} />
                     </div>
                     <div>
-                      <label className="block text-[13px] font-medium text-ink mb-1.5">Slack ID</label>
+                      <label className="block text-[15px] font-medium text-ink mb-1.5">Slack ID</label>
                       <input type="text" name="hr_contact_slack" value={form.hr_contact_slack} onChange={handleChange} placeholder="@janesmith" className={inputClass} />
                     </div>
                   </div>
@@ -291,18 +291,18 @@ export default function SettingsPage() {
                   <button
                     type="submit"
                     disabled={saveState === "saving"}
-                    className="bg-ember text-white text-[13px] font-medium px-5 py-2 rounded-full hover:opacity-80 disabled:opacity-50 transition-opacity"
+                    className="bg-ember text-white text-[15px] font-medium px-5 py-2.5 rounded-full hover:opacity-80 disabled:opacity-50 transition-opacity"
                   >
                     {saveState === "saving" ? "Saving…" : "Save changes"}
                   </button>
                   {saveState === "saved" && (
-                    <span className="flex items-center gap-1.5 text-[13px] text-success-tx">
-                      <IconCheck size={13} />
+                    <span className="flex items-center gap-1.5 text-[15px] text-success-tx">
+                      <IconCheck size={15} />
                       Changes saved
                     </span>
                   )}
                   {saveState === "error" && (
-                    <span className="text-[13px] text-danger-tx">
+                    <span className="text-[15px] text-danger-tx">
                       {errorMessage || "Something went wrong."}
                     </span>
                   )}
@@ -321,7 +321,7 @@ export default function SettingsPage() {
             >
               Appearance
             </h2>
-            <p className="text-[13px] text-ink-2 mb-8">
+            <p className="text-[15px] text-ink-2 mb-8">
               Choose how the dashboard looks. Your preference is saved in this browser.
             </p>
 
@@ -387,9 +387,9 @@ export default function SettingsPage() {
 
                     {/* Label row */}
                     <div className="flex items-center gap-1.5">
-                      <Icon size={13} className="text-ink-2" strokeWidth={1.75} />
+                      <Icon size={16} className="text-ink-2" strokeWidth={1.75} />
                       <span
-                        className="text-[13px]"
+                        className="text-[15px]"
                         style={{ fontWeight: active ? 500 : 400, color: active ? "var(--text-primary)" : "var(--text-secondary)" }}
                       >
                         {label}
@@ -412,13 +412,13 @@ export default function SettingsPage() {
             <div className="rounded-xl border border-line-3 p-5">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-[11px] text-ink-3 mb-1">Current plan</p>
-                  <p className="text-[20px] font-medium text-ink">{plan.label}</p>
-                  <p className="text-[13px] text-ink-2 mt-0.5">{plan.price}</p>
+                  <p className="text-[13px] text-ink-3 mb-1">Current plan</p>
+                  <p className="text-[24px] font-medium text-ink">{plan.label}</p>
+                  <p className="text-[15px] text-ink-2 mt-0.5">{plan.price}</p>
                 </div>
                 <Link
                   href="/pricing"
-                  className="flex items-center gap-1.5 text-[13px] font-medium px-4 py-2 rounded-full bg-ember text-white hover:opacity-80 transition-opacity shrink-0"
+                  className="flex items-center gap-1.5 text-[15px] font-medium px-4 py-2 rounded-full bg-ember text-white hover:opacity-80 transition-opacity shrink-0"
                 >
                   {currentPlan === "free" ? "Upgrade plan" : "Change plan"}
                   <IconExternalLink size={12} />
@@ -426,11 +426,11 @@ export default function SettingsPage() {
               </div>
 
               <div className="border-t border-line-3 pt-4">
-                <p className="text-[11px] text-ink-3 mb-3">What&apos;s included</p>
+                <p className="text-[13px] text-ink-3 mb-3">What&apos;s included</p>
                 <ul className="space-y-2">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-[13px] text-ink-2">
-                      <IconCheck size={13} className="text-teal shrink-0" strokeWidth={2} />
+                    <li key={f} className="flex items-center gap-2 text-[15px] text-ink-2">
+                      <IconCheck size={15} className="text-teal shrink-0" strokeWidth={2} />
                       {f}
                     </li>
                   ))}
@@ -440,15 +440,15 @@ export default function SettingsPage() {
 
             {/* Usage summary */}
             <div className="rounded-xl border border-line-3 p-5">
-              <p className="text-[13px] font-medium text-ink mb-4">Usage limits</p>
+              <p className="text-[15px] font-medium text-ink mb-4">Usage limits</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-muted rounded-lg px-3 py-2.5">
-                  <p className="text-[11px] text-ink-3 mb-1">Documents</p>
-                  <p className="text-[15px] font-medium text-ink">{plan.docsLimit}</p>
+                  <p className="text-[13px] text-ink-3 mb-1">Documents</p>
+                  <p className="text-[17px] font-medium text-ink">{plan.docsLimit}</p>
                 </div>
                 <div className="bg-muted rounded-lg px-3 py-2.5">
-                  <p className="text-[11px] text-ink-3 mb-1">Messages</p>
-                  <p className="text-[15px] font-medium text-ink">{plan.messagesLimit}</p>
+                  <p className="text-[13px] text-ink-3 mb-1">Messages</p>
+                  <p className="text-[17px] font-medium text-ink">{plan.messagesLimit}</p>
                 </div>
               </div>
             </div>

@@ -28,9 +28,9 @@ interface AnalyticsData {
 
 function MetricCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-muted rounded-lg px-3 py-[10px]">
-      <p className="text-[11px] text-ink-3 mb-1">{label}</p>
-      <p className="text-[20px] font-medium text-ink">{value}</p>
+    <div className="bg-muted rounded-lg px-4 py-3">
+      <p className="text-[13px] text-ink-3 mb-1">{label}</p>
+      <p className="text-[24px] font-medium text-ink">{value}</p>
     </div>
   );
 }
@@ -95,14 +95,14 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-8 py-4 border-b border-line-3">
-        <p className="text-[15px] font-medium text-ink">
+      <div className="flex items-center justify-between px-8 py-5 border-b border-line-3">
+        <p className="text-[17px] font-medium text-ink">
           {greeting()}, {user?.firstName}
         </p>
         <div className="flex items-center gap-3">
           <Link
             href="/pricing"
-            className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${PLAN_LABELS[currentPlan]?.className ?? PLAN_LABELS.free.className}`}
+            className={`text-[13px] font-medium px-3 py-1 rounded-full ${PLAN_LABELS[currentPlan]?.className ?? PLAN_LABELS.free.className}`}
           >
             {PLAN_LABELS[currentPlan]?.label ?? "Free"} plan
           </Link>
@@ -112,14 +112,14 @@ export default function DashboardPage() {
 
       {/* Free-plan upgrade banner */}
       {planLoaded && currentPlan === "free" && !bannerDismissed && (
-        <div className="bg-warning-bg border-b border-warning-tx/20 px-8 py-2.5 flex items-center justify-between">
-          <p className="text-[13px] text-warning-tx">
+        <div className="bg-warning-bg border-b border-warning-tx/20 px-8 py-3 flex items-center justify-between">
+          <p className="text-[15px] text-warning-tx">
             You&apos;re on the free plan · limited to 3 documents &amp; 50 messages/month.
           </p>
           <div className="flex items-center gap-4 shrink-0 ml-4">
             <Link
               href="/pricing"
-              className="text-[13px] font-medium text-warning-tx hover:opacity-80 underline"
+              className="text-[15px] font-medium text-warning-tx hover:opacity-80 underline"
             >
               See pricing →
             </Link>
@@ -140,7 +140,7 @@ export default function DashboardPage() {
         {/* Analytics */}
         {analytics && (
           <section className="mb-8">
-            <h2 className="text-[20px] font-medium text-ink mb-4">Analytics</h2>
+            <h2 className="text-[24px] font-medium text-ink mb-4">Analytics</h2>
             <div className="grid grid-cols-3 gap-2 mb-4">
               <MetricCard label="Total conversations" value={analytics.total_conversations} />
               <MetricCard label="Total messages" value={analytics.total_messages} />
@@ -148,18 +148,18 @@ export default function DashboardPage() {
             </div>
 
             <div className="bg-muted rounded-xl border border-line-3 p-5">
-              <p className="text-[13px] text-ink-2 mb-4">Messages per day — last 30 days</p>
+              <p className="text-[15px] text-ink-2 mb-4">Messages per day — last 30 days</p>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-tertiary)" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+                    tick={{ fontSize: 13, fill: "var(--text-tertiary)" }}
                     tickLine={false}
                     interval={4}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "var(--text-tertiary)" }}
+                    tick={{ fontSize: 13, fill: "var(--text-tertiary)" }}
                     tickLine={false}
                     axisLine={false}
                     allowDecimals={false}
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                     contentStyle={{
                       borderRadius: "8px",
                       border: "0.5px solid var(--border-secondary)",
-                      fontSize: "13px",
+                      fontSize: "15px",
                       background: "var(--bg-primary)",
                       color: "var(--text-primary)",
                     }}
@@ -191,12 +191,12 @@ export default function DashboardPage() {
         <section className="mb-8">
           <div className="flex items-center justify-between bg-muted rounded-xl border border-line-3 px-5 py-4">
             <div>
-              <p className="text-[13px] font-medium text-ink mb-0.5">Bot link</p>
-              <p className="text-[12px] text-ink-3 font-mono">{`/chat/${TEST_BOT_ID}`}</p>
+              <p className="text-[15px] font-medium text-ink mb-0.5">Bot link</p>
+              <p className="text-[13px] text-ink-3 font-mono">{`/chat/${TEST_BOT_ID}`}</p>
             </div>
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1.5 text-[13px] font-medium px-4 py-2 rounded-full border border-line-2 bg-surface hover:bg-muted transition-colors text-ink"
+              className="flex items-center gap-1.5 text-[15px] font-medium px-4 py-2 rounded-full border border-line-2 bg-surface hover:bg-muted transition-colors text-ink"
             >
               {linkCopied
                 ? <><IconCheck size={13} /><span>Copied</span></>
