@@ -4,7 +4,8 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { IconSparkles, IconCheck } from "@tabler/icons-react";
+import { IconCheck } from "@tabler/icons-react";
+import AppLogo from "@/components/AppLogo";
 
 const PLANS = [
   {
@@ -117,11 +118,8 @@ export default function PricingPage() {
     <main className="min-h-screen bg-surface">
       {/* Nav */}
       <nav className="border-b border-line-3 px-6 py-4 flex justify-between items-center">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-[10px] bg-ember flex items-center justify-center shrink-0">
-            <IconSparkles size={13} className="text-white" />
-          </div>
-          <span className="text-[15px] font-medium text-ink">Onboarding Co-Pilot</span>
+        <Link href="/dashboard">
+          <AppLogo size="lg" />
         </Link>
         <Link href="/dashboard" className="text-[13px] text-ink-2 hover:text-ink transition-colors">
           ← Back to dashboard

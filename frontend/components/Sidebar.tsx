@@ -12,6 +12,7 @@ import {
   IconSettings,
   IconSparkles,
 } from "@tabler/icons-react";
+import AppLogo from "@/components/AppLogo";
 
 const NAV_ITEMS = [
   { label: "Overview",  href: "/dashboard",           icon: IconLayoutDashboard, exact: true  },
@@ -46,13 +47,8 @@ export default function Sidebar() {
   return (
     <aside className="w-[240px] shrink-0 flex flex-col bg-muted border-r border-line-3 px-4 py-5 h-screen sticky top-0">
       {/* Logo mark + product name */}
-      <div className="flex items-center gap-2.5 px-3 mb-7">
-        <div className="w-7 h-7 rounded-md bg-[#111] flex items-center justify-center shrink-0">
-          <div className="w-2.5 h-2.5 rounded-full bg-teal" />
-        </div>
-        <span className="text-[15px] font-medium text-ink leading-tight">
-          Co-Pilot
-        </span>
+      <div className="px-3 mb-7">
+        <AppLogo size="lg" />
       </div>
 
       {/* Nav items */}

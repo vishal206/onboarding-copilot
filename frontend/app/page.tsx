@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
+import AppLogo from "@/components/AppLogo";
+import { APP_NAME, APP_EMAIL } from "@/lib/brand";
 import {
   IconArrowRight,
   IconCheck,
@@ -375,15 +377,7 @@ export default function Home() {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div
-            className="w-6 h-6 rounded-md flex items-center justify-center"
-            style={{ background: "#111" }}
-          >
-            <div className="w-2 h-2 rounded-full" style={{ background: "#4ADE80" }} />
-          </div>
-          <span className="text-[14px] font-medium" style={{ color: "#111" }}>
-            Onboarding Co-Pilot
-          </span>
+          <AppLogo size="md" textClassName="text-[#111]" />
         </Link>
 
         {/* Center links */}
@@ -792,15 +786,7 @@ export default function Home() {
           style={{ fontSize: "13px", color: "#bbb" }}
         >
           <div className="flex items-center gap-2">
-            <div
-              className="w-5 h-5 rounded-md flex items-center justify-center"
-              style={{ background: "#111" }}
-            >
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#4ADE80" }} />
-            </div>
-            <span className="font-medium" style={{ color: "#555" }}>
-              Onboarding Co-Pilot
-            </span>
+            <AppLogo size="sm" textClassName="text-[#555]" />
           </div>
           <nav className="flex gap-6">
             <button
@@ -817,7 +803,7 @@ export default function Home() {
               Sign up
             </Link>
           </nav>
-          <span>© {new Date().getFullYear()} Onboarding Co-Pilot</span>
+          <span>© {new Date().getFullYear()} {APP_NAME}</span>
         </div>
       </footer>
     </div>
