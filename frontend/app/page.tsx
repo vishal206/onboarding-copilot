@@ -292,43 +292,45 @@ export default function Home() {
             background: "transparent",
           }}
         >
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-2 shrink-0 px-4 py-2 rounded-full transition-all cursor-pointer"
-            style={{
-              background: C.NAV_BG,
-              border: `1px solid ${C.NAV_BORDER}`,
-              backdropFilter: "blur(12px)",
-            }}
-          >
-            <AppLogo size="md" textClassName={lightMode ? "text-gray-900" : "text-white"} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex items-center gap-2 shrink-0 px-4 py-2 rounded-full transition-all cursor-pointer"
+              style={{
+                background: C.NAV_BG,
+                border: `1px solid ${C.NAV_BORDER}`,
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <AppLogo size="md" textClassName={lightMode ? "text-gray-900" : "text-white"} />
+            </button>
 
-          <nav className="hidden sm:flex items-center gap-1.5 absolute left-1/2 -translate-x-1/2">
-            {NAV_LINKS.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => scrollTo(item.id)}
-                className="px-4 py-2 rounded-full text-[13px] cursor-pointer transition-all"
-                style={{
-                  color: C.NAV_TEXT,
-                  background: C.NAV_BG,
-                  border: `1px solid ${C.NAV_BORDER}`,
-                  backdropFilter: "blur(12px)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = C.HEADING;
-                  e.currentTarget.style.background = lightMode ? "rgba(220,220,218,0.90)" : "rgba(40,40,40,0.70)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = C.NAV_TEXT;
-                  e.currentTarget.style.background = C.NAV_BG;
-                }}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
+            <nav className="hidden sm:flex items-center gap-1.5">
+              {NAV_LINKS.map((item) => (
+                <button
+                  key={item.label}
+                  onClick={() => scrollTo(item.id)}
+                  className="px-4 py-2 rounded-full text-[13px] cursor-pointer transition-all"
+                  style={{
+                    color: C.NAV_TEXT,
+                    background: C.NAV_BG,
+                    border: `1px solid ${C.NAV_BORDER}`,
+                    backdropFilter: "blur(12px)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = C.HEADING;
+                    e.currentTarget.style.background = lightMode ? "rgba(220,220,218,0.90)" : "rgba(40,40,40,0.70)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = C.NAV_TEXT;
+                    e.currentTarget.style.background = C.NAV_BG;
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+          </div>
 
           <div className="flex items-center gap-2">
             {/* Light / dark toggle */}
