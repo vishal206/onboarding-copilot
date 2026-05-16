@@ -2,13 +2,14 @@
 
 import { useEffect, useRef } from "react";
 
+// Palette anchored to primary --color-teal (#4ECDC4 ≈ HSL 176 56%)
 const PALETTE_HSL: [number, number, number][] = [
-  [180, 45, 18],
-  [179, 43, 28],
-  [178, 41, 40],
-  [177, 44, 52],
-  [175, 46, 70],
-  [173, 48, 80],
+  [176, 56, 18],
+  [176, 56, 28],
+  [176, 56, 40],
+  [176, 56, 52],
+  [176, 56, 65],
+  [176, 56, 78],
 ];
 const BG_COLOR = "#0a0a0a";
 const PIXEL_SIZE = 9;

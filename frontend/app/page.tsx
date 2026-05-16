@@ -298,7 +298,7 @@ export default function Home() {
         <section className="relative flex overflow-hidden" style={{ minHeight: "100svh" }}>
 
           {/* Left half — dark background + text pinned to bottom-left */}
-          <div className="relative flex flex-col justify-end" style={{ flex: "0 0 50%", background: "#0d0d0d", padding: "0 48px 72px" }}>
+          <div className="relative flex flex-col justify-end" style={{ flex: "0 0 40%", background: "#0d0d0d", padding: "0 48px 72px" }}>
             <h1
               style={{
                 fontSize: "clamp(36px, 4.5vw, 72px)",
@@ -346,7 +346,7 @@ export default function Home() {
           </div>
 
           {/* Right half — PixelFlow animation, hard cut */}
-          <div className="relative" style={{ flex: "0 0 50%" }}>
+          <div className="relative" style={{ flex: "0 0 60%" }}>
             <div style={{ position: "absolute", inset: 0 }}>
               <PixelFlow />
             </div>
