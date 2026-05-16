@@ -15,6 +15,8 @@ import {
   IconSearch,
   IconPlus,
   IconMinus,
+  IconSun,
+  IconMoon,
 } from "@tabler/icons-react";
 
 const FEATURES = [
@@ -165,29 +167,57 @@ const NAV_LINKS = [
   { label: "FAQ", id: "faq" },
 ];
 
-const HEADING = "#F0F0F0";
-const MUTED = "rgba(200,230,232,0.82)";
-const TEXT_SHADOW = "0 2px 20px rgba(0,0,0,0.8)";
-const CARD = "rgba(78,205,196,0.04)";
-const CARD_BORDER = "rgba(78,205,196,0.12)";
 const ACCENT = "#4ECDC4";
 
-function FaqItem({ q, a }: { q: string; a: string }) {
+function getColors(light: boolean) {
+  return {
+    HEADING: light ? "#111111" : "#F0F0F0",
+    MUTED: light ? "rgba(30,70,70,0.78)" : "rgba(200,230,232,0.82)",
+    TEXT_SHADOW: light ? "none" : "0 2px 20px rgba(0,0,0,0.8)",
+    CARD: light ? "rgba(78,205,196,0.05)" : "rgba(78,205,196,0.04)",
+    CARD_BORDER: light ? "rgba(78,205,196,0.22)" : "rgba(78,205,196,0.12)",
+    PAGE_BG: light ? "#f4f4f2" : "#0d0d0d",
+    NAV_BG: light ? "rgba(244,244,242,0.85)" : "rgba(20,20,20,0.55)",
+    NAV_BORDER: light ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.10)",
+    NAV_TEXT: light ? "rgba(30,30,30,0.75)" : "rgba(240,240,240,0.75)",
+    MARQUEE_BG: light ? "rgba(244,244,242,0.6)" : "rgba(13,13,13,0.5)",
+    MARQUEE_BORDER: light ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.07)",
+    FOOTER_BG: light ? "rgba(236,236,234,0.8)" : "rgba(13,13,13,0.6)",
+    FOOTER_BORDER: light ? "rgba(0,0,0,0.07)" : "rgba(255,255,255,0.07)",
+    FOOTER_TEXT: light ? "rgba(60,100,100,0.55)" : "rgba(130,200,200,0.5)",
+    FAQ_BORDER: light ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)",
+    TOGGLE_BG: light ? "rgba(244,244,242,0.85)" : "rgba(20,20,20,0.55)",
+    HERO_LEFT_BG: light ? "#f4f4f2" : "#0d0d0d",
+    HERO_SUBTEXT: light ? "rgba(30,70,70,0.60)" : "rgba(220,235,235,0.65)",
+    PRICE_MUTED: light ? "rgba(30,100,100,0.45)" : "rgba(130,200,200,0.5)",
+    FAQ_STILL: light ? "rgba(30,100,100,0.45)" : "rgba(130,200,200,0.5)",
+  };
+}
+
+function FaqItem({
+  q,
+  a,
+  colors,
+}: {
+  q: string;
+  a: string;
+  colors: ReturnType<typeof getColors>;
+}) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+    <div className="border-b" style={{ borderColor: colors.FAQ_BORDER }}>
       <button
         className="w-full flex items-center justify-between py-5 text-left gap-6"
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="text-[15px] font-medium" style={{ color: HEADING, lineHeight: 1.4 }}>
+        <span className="text-[15px] font-medium" style={{ color: colors.HEADING, lineHeight: 1.4 }}>
           {q}
         </span>
         <span
           className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
           style={{
-            background: open ? ACCENT : "rgba(255,255,255,0.08)",
-            color: open ? "#0a0a0a" : "rgba(255,255,255,0.5)",
+            background: open ? ACCENT : colors.FAQ_BORDER,
+            color: open ? "#0a0a0a" : colors.MUTED,
           }}
         >
           {open ? <IconMinus size={12} strokeWidth={2.5} /> : <IconPlus size={12} strokeWidth={2.5} />}
@@ -201,7 +231,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
           transition: "max-height 0.35s ease, opacity 0.25s ease",
         }}
       >
-        <p className="pb-5 text-[14px] leading-relaxed" style={{ color: MUTED }}>
+        <p className="pb-5 text-[14px] leading-relaxed" style={{ color: colors.MUTED }}>
           {a}
         </p>
       </div>
@@ -214,6 +244,20 @@ function scrollTo(id: string) {
 }
 
 export default function Home() {
+  const [lightMode, setLightMode] = useState(false);
+  const C = getColors(lightMode);
+
+  function toggleTheme() {
+    const next = !lightMode;
+    setLightMode(next);
+    localStorage.setItem("theme", next ? "light" : "dark");
+  }
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "light") setLightMode(true);
+  }, []);
+
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>(".reveal");
     const observer = new IntersectionObserver(
@@ -229,7 +273,13 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen" style={{ background: "#0d0d0d" }}>
+    <div
+      className="relative min-h-screen"
+      style={{
+        background: C.PAGE_BG,
+        transition: "background 0.3s ease, color 0.3s ease",
+      }}
+    >
 
       {/* ── All page content ── */}
       <div className="relative z-10">
@@ -246,12 +296,12 @@ export default function Home() {
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="flex items-center gap-2 shrink-0 px-4 py-2 rounded-full transition-all cursor-pointer"
             style={{
-              background: "rgba(20,20,20,0.55)",
-              border: "1px solid rgba(255,255,255,0.10)",
+              background: C.NAV_BG,
+              border: `1px solid ${C.NAV_BORDER}`,
               backdropFilter: "blur(12px)",
             }}
           >
-            <AppLogo size="md" textClassName="text-white" />
+            <AppLogo size="md" textClassName={lightMode ? "text-gray-900" : "text-white"} />
           </button>
 
           <nav className="hidden sm:flex items-center gap-1.5 absolute left-1/2 -translate-x-1/2">
@@ -261,18 +311,18 @@ export default function Home() {
                 onClick={() => scrollTo(item.id)}
                 className="px-4 py-2 rounded-full text-[13px] cursor-pointer transition-all"
                 style={{
-                  color: "rgba(240,240,240,0.75)",
-                  background: "rgba(20,20,20,0.55)",
-                  border: "1px solid rgba(255,255,255,0.10)",
+                  color: C.NAV_TEXT,
+                  background: C.NAV_BG,
+                  border: `1px solid ${C.NAV_BORDER}`,
                   backdropFilter: "blur(12px)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = HEADING;
-                  e.currentTarget.style.background = "rgba(40,40,40,0.70)";
+                  e.currentTarget.style.color = C.HEADING;
+                  e.currentTarget.style.background = lightMode ? "rgba(220,220,218,0.90)" : "rgba(40,40,40,0.70)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "rgba(240,240,240,0.75)";
-                  e.currentTarget.style.background = "rgba(20,20,20,0.55)";
+                  e.currentTarget.style.color = C.NAV_TEXT;
+                  e.currentTarget.style.background = C.NAV_BG;
                 }}
               >
                 {item.label}
@@ -280,32 +330,52 @@ export default function Home() {
             ))}
           </nav>
 
-          <Link
-            href="/sign-in"
-            className="text-[13px] font-medium px-5 py-2 rounded-full shrink-0 transition-all hover:opacity-90"
-            style={{
-              color: "rgba(240,240,240,0.75)",
-              background: "rgba(20,20,20,0.55)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(12px)",
-            }}
-          >
-            Sign in
-          </Link>
+          <div className="flex items-center gap-2">
+            {/* Light / dark toggle */}
+            <button
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer"
+              style={{
+                background: C.TOGGLE_BG,
+                border: `1px solid ${C.NAV_BORDER}`,
+                backdropFilter: "blur(12px)",
+                color: C.NAV_TEXT,
+              }}
+              title={lightMode ? "Switch to dark mode" : "Switch to light mode"}
+            >
+              {lightMode ? <IconMoon size={15} strokeWidth={1.75} /> : <IconSun size={15} strokeWidth={1.75} />}
+            </button>
+
+            <Link
+              href="/sign-in"
+              className="text-[13px] font-medium px-5 py-2 rounded-full shrink-0 transition-all hover:opacity-90"
+              style={{
+                color: C.NAV_TEXT,
+                background: C.NAV_BG,
+                border: `1px solid ${C.NAV_BORDER}`,
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              Sign in
+            </Link>
+          </div>
         </header>
 
         {/* ── Hero ── */}
         <section className="relative flex overflow-hidden" style={{ minHeight: "100svh" }}>
 
-          {/* Left half — dark background + text pinned to bottom-left */}
-          <div className="relative flex flex-col justify-end" style={{ flex: "0 0 40%", background: "#0d0d0d", padding: "0 48px 72px" }}>
+          {/* Left half — background + text pinned to bottom-left */}
+          <div
+            className="relative flex flex-col justify-end"
+            style={{ flex: "0 0 40%", background: C.HERO_LEFT_BG, padding: "0 48px 72px", transition: "background 0.3s ease" }}
+          >
             <h1
               style={{
                 fontSize: "clamp(36px, 4.5vw, 72px)",
                 fontWeight: 600,
                 lineHeight: 1.08,
                 letterSpacing: "-0.03em",
-                color: HEADING,
+                color: C.HEADING,
                 maxWidth: "560px",
               }}
             >
@@ -316,7 +386,7 @@ export default function Home() {
 
             <p
               className="mt-5"
-              style={{ fontSize: "14px", color: "rgba(220,235,235,0.65)", maxWidth: "380px", lineHeight: 1.75 }}
+              style={{ fontSize: "14px", color: C.HERO_SUBTEXT, maxWidth: "380px", lineHeight: 1.75 }}
             >
               Upload your onboarding docs once. Your new hires get an AI assistant
               that answers questions instantly — 24/7, from your knowledge base.
@@ -339,7 +409,7 @@ export default function Home() {
                 Get started free
                 <IconArrowRight size={13} />
               </Link>
-              <span style={{ fontSize: "11px", color: "rgba(180,210,210,0.4)" }}>
+              <span style={{ fontSize: "11px", color: C.HERO_SUBTEXT }}>
                 No credit card required
               </span>
             </div>
@@ -358,11 +428,12 @@ export default function Home() {
         <div
           className="overflow-hidden"
           style={{
-            borderTop: "1px solid rgba(255,255,255,0.07)",
-            borderBottom: "1px solid rgba(255,255,255,0.07)",
+            borderTop: `1px solid ${C.MARQUEE_BORDER}`,
+            borderBottom: `1px solid ${C.MARQUEE_BORDER}`,
             padding: "22px 0",
-            background: "rgba(13,13,13,0.5)",
+            background: C.MARQUEE_BG,
             backdropFilter: "blur(8px)",
+            transition: "background 0.3s ease",
           }}
         >
           <div className="flex whitespace-nowrap animate-marquee">
@@ -375,8 +446,8 @@ export default function Home() {
                       fontSize: "clamp(30px, 4.5vw, 52px)",
                       fontWeight: 300,
                       letterSpacing: "-0.025em",
-                      color: item.green ? ACCENT : HEADING,
-                    textShadow: TEXT_SHADOW,
+                      color: item.green ? ACCENT : C.HEADING,
+                      textShadow: C.TEXT_SHADOW,
                     }}
                   >
                     {item.text}
@@ -396,14 +467,14 @@ export default function Home() {
                   fontSize: "clamp(28px, 3.5vw, 42px)",
                   fontWeight: 300,
                   letterSpacing: "-0.025em",
-                  color: HEADING,
+                  color: C.HEADING,
                   lineHeight: 1.1,
-                  textShadow: TEXT_SHADOW,
+                  textShadow: C.TEXT_SHADOW,
                 }}
               >
                 Up and running in minutes
               </h2>
-              <p className="mt-3 text-[14px]" style={{ color: MUTED, textShadow: TEXT_SHADOW }}>
+              <p className="mt-3 text-[14px]" style={{ color: C.MUTED, textShadow: C.TEXT_SHADOW }}>
                 No engineering, no integrations, no waiting. Three steps and you're live.
               </p>
             </div>
@@ -416,15 +487,15 @@ export default function Home() {
                 <div
                   key={step.num}
                   className="reveal p-8 md:p-10 flex flex-col gap-4"
-                  style={{ background: CARD, backdropFilter: "blur(12px)", transitionDelay: `${i * 100}ms` }}
+                  style={{ background: C.CARD, backdropFilter: "blur(12px)", transitionDelay: `${i * 100}ms` }}
                 >
                   <span style={{ fontSize: "48px", fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1, color: ACCENT }}>
                     {step.num}
                   </span>
-                  <h3 className="text-[17px] font-medium" style={{ color: HEADING }}>
+                  <h3 className="text-[17px] font-medium" style={{ color: C.HEADING }}>
                     {step.title}
                   </h3>
-                  <p className="text-[13px] leading-relaxed" style={{ color: MUTED }}>
+                  <p className="text-[13px] leading-relaxed" style={{ color: C.MUTED }}>
                     {step.description}
                   </p>
                 </div>
@@ -442,14 +513,14 @@ export default function Home() {
                   fontSize: "clamp(28px, 3.5vw, 42px)",
                   fontWeight: 300,
                   letterSpacing: "-0.025em",
-                  color: HEADING,
+                  color: C.HEADING,
                   lineHeight: 1.1,
-                  textShadow: TEXT_SHADOW,
+                  textShadow: C.TEXT_SHADOW,
                 }}
               >
                 Everything your onboarding needs
               </h2>
-              <p className="mt-3 text-[14px]" style={{ color: MUTED, textShadow: TEXT_SHADOW }}>
+              <p className="mt-3 text-[14px]" style={{ color: C.MUTED, textShadow: C.TEXT_SHADOW }}>
                 Set up in minutes. Your new hires will wonder how they ever managed without it.
               </p>
             </div>
@@ -460,8 +531,8 @@ export default function Home() {
                   key={f.title}
                   className="rounded-2xl p-6 reveal"
                   style={{
-                    background: CARD,
-                    border: `1px solid ${CARD_BORDER}`,
+                    background: C.CARD,
+                    border: `1px solid ${C.CARD_BORDER}`,
                     backdropFilter: "blur(12px)",
                     transitionDelay: `${i * 80}ms`,
                   }}
@@ -472,10 +543,10 @@ export default function Home() {
                   >
                     <f.icon size={16} style={{ color: ACCENT }} strokeWidth={1.75} />
                   </div>
-                  <h3 className="text-[15px] font-medium mb-2" style={{ color: HEADING }}>
+                  <h3 className="text-[15px] font-medium mb-2" style={{ color: C.HEADING }}>
                     {f.title}
                   </h3>
-                  <p className="text-[13px] leading-relaxed" style={{ color: MUTED }}>
+                  <p className="text-[13px] leading-relaxed" style={{ color: C.MUTED }}>
                     {f.description}
                   </p>
                 </div>
@@ -493,14 +564,14 @@ export default function Home() {
                   fontSize: "clamp(28px, 3.5vw, 42px)",
                   fontWeight: 300,
                   letterSpacing: "-0.025em",
-                  color: HEADING,
+                  color: C.HEADING,
                   lineHeight: 1.1,
-                  textShadow: TEXT_SHADOW,
+                  textShadow: C.TEXT_SHADOW,
                 }}
               >
                 Simple, transparent pricing
               </h2>
-              <p className="mt-3 text-[14px]" style={{ color: MUTED, textShadow: TEXT_SHADOW }}>
+              <p className="mt-3 text-[14px]" style={{ color: C.MUTED, textShadow: C.TEXT_SHADOW }}>
                 Choose the plan that fits your team. Upgrade or cancel anytime.
               </p>
             </div>
@@ -513,7 +584,7 @@ export default function Home() {
                   style={{
                     ...(p.highlighted
                       ? { background: "rgba(78,205,196,0.1)", border: "1px solid rgba(78,205,196,0.3)" }
-                      : { background: CARD, border: `1px solid ${CARD_BORDER}` }),
+                      : { background: C.CARD, border: `1px solid ${C.CARD_BORDER}` }),
                     backdropFilter: "blur(12px)",
                     transitionDelay: `${i * 80}ms`,
                   }}
@@ -523,16 +594,16 @@ export default function Home() {
                       Most popular
                     </span>
                   )}
-                  <h3 className="text-[20px] font-medium mb-1" style={{ color: HEADING }}>
+                  <h3 className="text-[20px] font-medium mb-1" style={{ color: C.HEADING }}>
                     {p.name}
                   </h3>
                   <div className="flex items-end gap-1 mb-7">
                     {p.price === 0 ? (
-                      <span className="text-[32px] font-light" style={{ color: HEADING }}>Free</span>
+                      <span className="text-[32px] font-light" style={{ color: C.HEADING }}>Free</span>
                     ) : (
                       <>
-                        <span className="text-[32px] font-light" style={{ color: HEADING }}>${p.price}</span>
-                        <span className="text-[13px] mb-2" style={{ color: "rgba(130,200,200,0.5)" }}>/mo</span>
+                        <span className="text-[32px] font-light" style={{ color: C.HEADING }}>${p.price}</span>
+                        <span className="text-[13px] mb-2" style={{ color: C.PRICE_MUTED }}>/mo</span>
                       </>
                     )}
                   </div>
@@ -541,7 +612,7 @@ export default function Home() {
                     {p.features.map((f) => (
                       <li key={f} className="flex items-start gap-2 text-[13px]">
                         <IconCheck size={13} className="mt-0.5 shrink-0" style={{ color: ACCENT }} strokeWidth={2.5} />
-                        <span style={{ color: MUTED }}>{f}</span>
+                        <span style={{ color: C.MUTED }}>{f}</span>
                       </li>
                     ))}
                   </ul>
@@ -552,7 +623,7 @@ export default function Home() {
                     style={
                       p.highlighted
                         ? { background: ACCENT, color: "#0a0a0a" }
-                        : { background: "rgba(78,205,196,0.08)", color: HEADING, border: `1px solid ${CARD_BORDER}` }
+                        : { background: "rgba(78,205,196,0.08)", color: C.HEADING, border: `1px solid ${C.CARD_BORDER}` }
                     }
                     onClick={() => posthog.capture("pricing_get_started_clicked", { plan: p.plan })}
                   >
@@ -573,14 +644,14 @@ export default function Home() {
                   fontSize: "clamp(28px, 3.5vw, 42px)",
                   fontWeight: 300,
                   letterSpacing: "-0.025em",
-                  color: HEADING,
+                  color: C.HEADING,
                   lineHeight: 1.1,
-                  textShadow: TEXT_SHADOW,
+                  textShadow: C.TEXT_SHADOW,
                 }}
               >
                 Common questions
               </h2>
-              <p className="mt-3 text-[14px]" style={{ color: MUTED, textShadow: TEXT_SHADOW }}>
+              <p className="mt-3 text-[14px]" style={{ color: C.MUTED, textShadow: C.TEXT_SHADOW }}>
                 Everything you need to know before getting started.
               </p>
             </div>
@@ -588,25 +659,25 @@ export default function Home() {
             <div
               className="reveal rounded-2xl overflow-hidden"
               style={{
-                background: CARD,
-                border: `1px solid ${CARD_BORDER}`,
+                background: C.CARD,
+                border: `1px solid ${C.CARD_BORDER}`,
                 backdropFilter: "blur(12px)",
                 padding: "0 28px",
               }}
             >
               {FAQ_ITEMS.map((item) => (
-                <FaqItem key={item.q} q={item.q} a={item.a} />
+                <FaqItem key={item.q} q={item.q} a={item.a} colors={C} />
               ))}
             </div>
 
-            <p className="text-center mt-8 text-[13px]" style={{ color: "rgba(130,200,200,0.5)" }}>
+            <p className="text-center mt-8 text-[13px]" style={{ color: C.FAQ_STILL }}>
               Still have questions?{" "}
               <a
                 href={`mailto:${APP_EMAIL}`}
                 className="underline transition-colors"
-                style={{ color: MUTED }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = HEADING)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = MUTED)}
+                style={{ color: C.MUTED }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = C.HEADING)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = C.MUTED)}
               >
                 Email us
               </a>
@@ -618,17 +689,18 @@ export default function Home() {
         <footer
           className="px-8 py-10"
           style={{
-            borderTop: "1px solid rgba(255,255,255,0.07)",
-            background: "rgba(13,13,13,0.6)",
+            borderTop: `1px solid ${C.FOOTER_BORDER}`,
+            background: C.FOOTER_BG,
             backdropFilter: "blur(12px)",
+            transition: "background 0.3s ease",
           }}
         >
           <div
             className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4"
-            style={{ fontSize: "13px", color: "rgba(130,200,200,0.5)" }}
+            style={{ fontSize: "13px", color: C.FOOTER_TEXT }}
           >
             <div className="flex items-center gap-2">
-              <AppLogo size="sm" textClassName="text-white/60" />
+              <AppLogo size="sm" textClassName={lightMode ? "text-gray-500" : "text-white/60"} />
             </div>
             <nav className="flex gap-6">
               <button

@@ -41,7 +41,7 @@ export default function AppLogo({ size = "md", textClassName, className }: AppLo
   return (
     <span className={`flex items-center gap-2 ${className ?? ""}`}>
       <HugIcon px={px} />
-      <span className={`font-semibold text-ink leading-tight ${text} ${textClassName ?? ""}`} style={{ fontFamily: "var(--font-bricolage), system-ui, sans-serif" }}>
+      <span className={`font-semibold leading-tight ${text} ${textClassName ?? "text-ink"}`} style={{ fontFamily: "var(--font-bricolage), system-ui, sans-serif" }}>
         {APP_NAME}
       </span>
     </span>
