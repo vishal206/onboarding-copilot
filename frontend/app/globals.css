@@ -66,9 +66,9 @@
   --color-ember-dark:  #15803d;
 
   /* AI accent — static */
-  --color-teal:        #4ADE80;
-  --color-teal-light:  #f0fdf4;
-  --color-teal-dark:   #15803d;
+  --color-teal:        #4ECDC4;
+  --color-teal-light:  #e0f7f6;
+  --color-teal-dark:   #2a9d96;
 
   /* Adaptive surfaces → Tailwind bg-surface, text-ink, etc. */
   --color-surface:  var(--bg-primary);
@@ -94,15 +94,20 @@
   --color-info-tx:    var(--text-info);
 
   /* Font */
-  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-heading: var(--font-bricolage), system-ui, sans-serif;
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: "DM Sans", system-ui, sans-serif;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-bricolage), system-ui, sans-serif;
 }
 
 html {

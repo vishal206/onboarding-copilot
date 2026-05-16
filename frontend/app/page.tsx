@@ -159,17 +159,18 @@ const FAQ_ITEMS = [
 ];
 
 const NAV_LINKS = [
-  { label: "Features", id: "features" },
   { label: "How it works", id: "how" },
+  { label: "Features", id: "features" },
   { label: "Pricing", id: "pricing" },
   { label: "FAQ", id: "faq" },
 ];
 
-const HEADING = "#ffffff";
-const MUTED = "rgba(210,235,220,0.82)";
-const TEXT_SHADOW = "0 1px 20px rgba(2,8,4,0.9), 0 0 8px rgba(2,8,4,0.7)";
-const CARD = "rgba(74,222,128,0.04)";
-const CARD_BORDER = "rgba(74,222,128,0.12)";
+const HEADING = "#F0F0F0";
+const MUTED = "rgba(200,230,232,0.82)";
+const TEXT_SHADOW = "0 2px 20px rgba(0,0,0,0.8)";
+const CARD = "rgba(78,205,196,0.04)";
+const CARD_BORDER = "rgba(78,205,196,0.12)";
+const ACCENT = "#4ECDC4";
 
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
@@ -185,8 +186,8 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         <span
           className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
           style={{
-            background: open ? "#4ADE80" : "rgba(255,255,255,0.08)",
-            color: open ? "#040D08" : "rgba(255,255,255,0.5)",
+            background: open ? ACCENT : "rgba(255,255,255,0.08)",
+            color: open ? "#0a0a0a" : "rgba(255,255,255,0.5)",
           }}
         >
           {open ? <IconMinus size={12} strokeWidth={2.5} /> : <IconPlus size={12} strokeWidth={2.5} />}
@@ -228,39 +229,51 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative min-h-screen" style={{ background: "#040D08" }}>
+    <div className="relative min-h-screen" style={{ background: "#0d0d0d" }}>
 
-      {/* ── PixelFlow fixed full-page background ── */}
-      <div className="fixed inset-0 z-0">
-        <PixelFlow />
-      </div>
-
-      {/* ── All page content sits above the canvas ── */}
+      {/* ── All page content ── */}
       <div className="relative z-10">
 
         {/* ── Header ── */}
         <header
           className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8"
           style={{
-            height: "60px",
-            background: "rgba(4,13,8,0.8)",
-            backdropFilter: "blur(20px)",
-            borderBottom: "1px solid rgba(255,255,255,0.07)",
+            height: "64px",
+            background: "transparent",
           }}
         >
-          <Link href="/" className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-2 shrink-0 px-4 py-2 rounded-full transition-all cursor-pointer"
+            style={{
+              background: "rgba(20,20,20,0.55)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(12px)",
+            }}
+          >
             <AppLogo size="md" textClassName="text-white" />
-          </Link>
+          </button>
 
-          <nav className="hidden sm:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+          <nav className="hidden sm:flex items-center gap-1.5 absolute left-1/2 -translate-x-1/2">
             {NAV_LINKS.map((item) => (
               <button
                 key={item.label}
                 onClick={() => scrollTo(item.id)}
-                className="px-4 py-1.5 rounded-full text-[13px] cursor-pointer transition-colors"
-                style={{ color: MUTED, background: "none", border: "none" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = HEADING)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = MUTED)}
+                className="px-4 py-2 rounded-full text-[13px] cursor-pointer transition-all"
+                style={{
+                  color: "rgba(240,240,240,0.75)",
+                  background: "rgba(20,20,20,0.55)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  backdropFilter: "blur(12px)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = HEADING;
+                  e.currentTarget.style.background = "rgba(40,40,40,0.70)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "rgba(240,240,240,0.75)";
+                  e.currentTarget.style.background = "rgba(20,20,20,0.55)";
+                }}
               >
                 {item.label}
               </button>
@@ -269,69 +282,81 @@ export default function Home() {
 
           <Link
             href="/sign-in"
-            className="text-[13px] font-medium px-4 py-2 rounded-full shrink-0 transition-opacity hover:opacity-80"
-            style={{ color: HEADING, border: "1px solid rgba(74,222,128,0.2)" }}
+            className="text-[13px] font-medium px-5 py-2 rounded-full shrink-0 transition-all hover:opacity-90"
+            style={{
+              color: "rgba(240,240,240,0.75)",
+              background: "rgba(20,20,20,0.55)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(12px)",
+            }}
           >
             Sign in
           </Link>
         </header>
 
         {/* ── Hero ── */}
-        <section className="flex flex-col items-center text-center px-6 pt-44 pb-32" style={{ minHeight: "100svh" }}>
-          <div
-            className="inline-flex items-center gap-2 mb-8 text-[12px] font-medium px-3 py-1.5 rounded-full"
-            style={{ background: "rgba(74,222,128,0.12)", color: "#4ADE80", border: "1px solid rgba(74,222,128,0.25)" }}
-          >
-            <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#4ADE80" }} />
-            AI-powered onboarding
+        <section className="relative overflow-hidden" style={{ minHeight: "100svh" }}>
+          {/* PixelFlow — full bleed, no overlay */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+            <PixelFlow />
           </div>
 
-          <h1
-            style={{
-              fontSize: "clamp(50px, 7.5vw, 92px)",
-              fontWeight: 300,
-              lineHeight: 1.04,
-              letterSpacing: "-0.03em",
-              color: HEADING,
-              maxWidth: "820px",
-              textShadow: TEXT_SHADOW,
-            }}
-          >
-            New hires get answers.
-            <br />
-            <span style={{ color: "#4ADE80" }}>HR gets time back.</span>
-          </h1>
+          {/* Subtle bottom gradient so text pops */}
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 1,
+            background: "linear-gradient(to top, rgba(8,8,8,0.75) 0%, rgba(8,8,8,0.15) 40%, transparent 70%)",
+          }} />
 
-          <p
-            className="mt-6"
-            style={{ fontSize: "14px", color: MUTED, maxWidth: "380px", lineHeight: 1.65, textShadow: TEXT_SHADOW }}
+          {/* Hero content — bottom-left */}
+          <div
+            className="relative flex flex-col"
+            style={{ zIndex: 2, position: "absolute", bottom: "72px", left: "0", right: "0", padding: "0 48px" }}
           >
-            Upload your onboarding docs once. Your new hires get an AI assistant
-            that answers questions instantly — 24/7, from your knowledge base.
-          </p>
+            <h1
+              style={{
+                fontSize: "clamp(42px, 6vw, 80px)",
+                fontWeight: 300,
+                lineHeight: 1.08,
+                letterSpacing: "-0.03em",
+                color: HEADING,
+                maxWidth: "640px",
+              }}
+            >
+              New hires get answers.
+              <br />
+              HR gets time back.
+            </h1>
 
-          <Link
-            href="/sign-up"
-            className="mt-8 inline-flex items-center gap-2.5"
-            style={{
-              background: "#4ADE80",
-              color: "#040D08",
-              borderRadius: "9999px",
-              padding: "14px 28px",
-              fontSize: "12px",
-              fontWeight: 500,
-              letterSpacing: "0.07em",
-              textTransform: "uppercase",
-            }}
-            onClick={() => posthog.capture("hero_start_trial_clicked")}
-          >
-            Get started
-            <IconArrowRight size={13} />
-          </Link>
+            <p
+              className="mt-4"
+              style={{ fontSize: "13px", color: "rgba(220,235,235,0.65)", maxWidth: "360px", lineHeight: 1.7 }}
+            >
+              Upload your onboarding docs once. Your new hires get an AI assistant
+              that answers questions instantly — 24/7, from your knowledge base.
+            </p>
 
-          <p className="mt-3 text-[11px]" style={{ color: "rgba(150,200,170,0.4)" }}>
-            No credit card required · Cancel anytime
-          </p>
+            <div className="flex items-center gap-4 mt-8">
+              <Link
+                href="/sign-up"
+                className="inline-flex items-center gap-2.5 transition-opacity hover:opacity-85"
+                style={{
+                  background: ACCENT,
+                  color: "#0a0a0a",
+                  borderRadius: "9999px",
+                  padding: "12px 26px",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                }}
+                onClick={() => posthog.capture("hero_start_trial_clicked")}
+              >
+                Get started free
+                <IconArrowRight size={13} />
+              </Link>
+              <span style={{ fontSize: "11px", color: "rgba(180,210,210,0.4)" }}>
+                No credit card required
+              </span>
+            </div>
+          </div>
         </section>
 
         {/* ── Marquee ticker ── */}
@@ -341,7 +366,7 @@ export default function Home() {
             borderTop: "1px solid rgba(255,255,255,0.07)",
             borderBottom: "1px solid rgba(255,255,255,0.07)",
             padding: "22px 0",
-            background: "rgba(4,13,8,0.5)",
+            background: "rgba(13,13,13,0.5)",
             backdropFilter: "blur(8px)",
           }}
         >
@@ -355,7 +380,7 @@ export default function Home() {
                       fontSize: "clamp(30px, 4.5vw, 52px)",
                       fontWeight: 300,
                       letterSpacing: "-0.025em",
-                      color: item.green ? "#4ADE80" : HEADING,
+                      color: item.green ? ACCENT : HEADING,
                     textShadow: TEXT_SHADOW,
                     }}
                   >
@@ -390,7 +415,7 @@ export default function Home() {
 
             <div
               className="grid grid-cols-1 md:grid-cols-3 gap-px"
-              style={{ background: CARD_BORDER, border: `1px solid ${CARD_BORDER}`, borderRadius: "20px", overflow: "hidden" }}
+              style={{ background: "rgba(78,205,196,0.2)", border: "1px solid rgba(78,205,196,0.2)", borderRadius: "20px", overflow: "hidden" }}
             >
               {HOW_STEPS.map((step, i) => (
                 <div
@@ -398,7 +423,7 @@ export default function Home() {
                   className="reveal p-8 md:p-10 flex flex-col gap-4"
                   style={{ background: CARD, backdropFilter: "blur(12px)", transitionDelay: `${i * 100}ms` }}
                 >
-                  <span style={{ fontSize: "48px", fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1, color: "#4ADE80" }}>
+                  <span style={{ fontSize: "48px", fontWeight: 200, letterSpacing: "-0.04em", lineHeight: 1, color: ACCENT }}>
                     {step.num}
                   </span>
                   <h3 className="text-[17px] font-medium" style={{ color: HEADING }}>
@@ -448,9 +473,9 @@ export default function Home() {
                 >
                   <div
                     className="w-9 h-9 rounded-xl flex items-center justify-center mb-5"
-                    style={{ background: "rgba(74,222,128,0.12)" }}
+                    style={{ background: "rgba(78,205,196,0.12)" }}
                   >
-                    <f.icon size={16} style={{ color: "#4ADE80" }} strokeWidth={1.75} />
+                    <f.icon size={16} style={{ color: ACCENT }} strokeWidth={1.75} />
                   </div>
                   <h3 className="text-[15px] font-medium mb-2" style={{ color: HEADING }}>
                     {f.title}
@@ -492,14 +517,14 @@ export default function Home() {
                   className="rounded-2xl p-6 flex flex-col reveal"
                   style={{
                     ...(p.highlighted
-                      ? { background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)" }
+                      ? { background: "rgba(78,205,196,0.1)", border: "1px solid rgba(78,205,196,0.3)" }
                       : { background: CARD, border: `1px solid ${CARD_BORDER}` }),
                     backdropFilter: "blur(12px)",
                     transitionDelay: `${i * 80}ms`,
                   }}
                 >
                   {p.highlighted && (
-                    <span className="text-[10px] font-medium uppercase tracking-widest mb-2" style={{ color: "#4ADE80" }}>
+                    <span className="text-[10px] font-medium uppercase tracking-widest mb-2" style={{ color: ACCENT }}>
                       Most popular
                     </span>
                   )}
@@ -512,7 +537,7 @@ export default function Home() {
                     ) : (
                       <>
                         <span className="text-[32px] font-light" style={{ color: HEADING }}>${p.price}</span>
-                        <span className="text-[13px] mb-2" style={{ color: "rgba(150,200,170,0.5)" }}>/mo</span>
+                        <span className="text-[13px] mb-2" style={{ color: "rgba(130,200,200,0.5)" }}>/mo</span>
                       </>
                     )}
                   </div>
@@ -520,7 +545,7 @@ export default function Home() {
                   <ul className="space-y-2.5 mb-8 flex-1">
                     {p.features.map((f) => (
                       <li key={f} className="flex items-start gap-2 text-[13px]">
-                        <IconCheck size={13} className="mt-0.5 shrink-0" style={{ color: "#4ADE80" }} strokeWidth={2.5} />
+                        <IconCheck size={13} className="mt-0.5 shrink-0" style={{ color: ACCENT }} strokeWidth={2.5} />
                         <span style={{ color: MUTED }}>{f}</span>
                       </li>
                     ))}
@@ -531,8 +556,8 @@ export default function Home() {
                     className="w-full py-2.5 rounded-full text-[13px] font-medium text-center block transition-opacity hover:opacity-80"
                     style={
                       p.highlighted
-                        ? { background: "#4ADE80", color: "#040D08" }
-                        : { background: "rgba(74,222,128,0.08)", color: HEADING, border: `1px solid ${CARD_BORDER}` }
+                        ? { background: ACCENT, color: "#0a0a0a" }
+                        : { background: "rgba(78,205,196,0.08)", color: HEADING, border: `1px solid ${CARD_BORDER}` }
                     }
                     onClick={() => posthog.capture("pricing_get_started_clicked", { plan: p.plan })}
                   >
@@ -579,7 +604,7 @@ export default function Home() {
               ))}
             </div>
 
-            <p className="text-center mt-8 text-[13px]" style={{ color: "rgba(150,200,170,0.5)" }}>
+            <p className="text-center mt-8 text-[13px]" style={{ color: "rgba(130,200,200,0.5)" }}>
               Still have questions?{" "}
               <a
                 href={`mailto:${APP_EMAIL}`}
@@ -599,13 +624,13 @@ export default function Home() {
           className="px-8 py-10"
           style={{
             borderTop: "1px solid rgba(255,255,255,0.07)",
-            background: "rgba(4,13,8,0.6)",
+            background: "rgba(13,13,13,0.6)",
             backdropFilter: "blur(12px)",
           }}
         >
           <div
             className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4"
-            style={{ fontSize: "13px", color: "rgba(150,200,170,0.5)" }}
+            style={{ fontSize: "13px", color: "rgba(130,200,200,0.5)" }}
           >
             <div className="flex items-center gap-2">
               <AppLogo size="sm" textClassName="text-white/60" />

@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Bricolage_Grotesque } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { APP_NAME } from "@/lib/brand";
 
-const dmSans = DM_Sans({ subsets: ["latin"], weight: ["300", "400", "500"] });
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  weight: ["400", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -32,7 +42,7 @@ export default function RootLayout({
             }}
           />
         </head>
-        <body className={dmSans.className}>{children}</body>
+        <body className={`${plusJakartaSans.variable} ${bricolageGrotesque.variable}`}>{children}</body>
       </html>
     </ClerkProvider>
   );
