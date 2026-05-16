@@ -295,31 +295,18 @@ export default function Home() {
         </header>
 
         {/* ── Hero ── */}
-        <section className="relative overflow-hidden" style={{ minHeight: "100svh" }}>
-          {/* PixelFlow — full bleed, no overlay */}
-          <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
-            <PixelFlow />
-          </div>
+        <section className="relative flex overflow-hidden" style={{ minHeight: "100svh" }}>
 
-          {/* Subtle bottom gradient so text pops */}
-          <div style={{
-            position: "absolute", inset: 0, zIndex: 1,
-            background: "linear-gradient(to top, rgba(8,8,8,0.75) 0%, rgba(8,8,8,0.15) 40%, transparent 70%)",
-          }} />
-
-          {/* Hero content — bottom-left */}
-          <div
-            className="relative flex flex-col"
-            style={{ zIndex: 2, position: "absolute", bottom: "72px", left: "0", right: "0", padding: "0 48px" }}
-          >
+          {/* Left half — dark background + text pinned to bottom-left */}
+          <div className="relative flex flex-col justify-end" style={{ flex: "0 0 50%", background: "#0d0d0d", padding: "0 48px 72px" }}>
             <h1
               style={{
-                fontSize: "clamp(42px, 6vw, 80px)",
+                fontSize: "clamp(36px, 4.5vw, 72px)",
                 fontWeight: 300,
                 lineHeight: 1.08,
                 letterSpacing: "-0.03em",
                 color: HEADING,
-                maxWidth: "640px",
+                maxWidth: "560px",
               }}
             >
               New hires get answers.
@@ -328,14 +315,14 @@ export default function Home() {
             </h1>
 
             <p
-              className="mt-4"
-              style={{ fontSize: "13px", color: "rgba(220,235,235,0.65)", maxWidth: "360px", lineHeight: 1.7 }}
+              className="mt-5"
+              style={{ fontSize: "14px", color: "rgba(220,235,235,0.65)", maxWidth: "380px", lineHeight: 1.75 }}
             >
               Upload your onboarding docs once. Your new hires get an AI assistant
               that answers questions instantly — 24/7, from your knowledge base.
             </p>
 
-            <div className="flex items-center gap-4 mt-8">
+            <div className="flex items-center gap-4 mt-10">
               <Link
                 href="/sign-up"
                 className="inline-flex items-center gap-2.5 transition-opacity hover:opacity-85"
@@ -343,7 +330,7 @@ export default function Home() {
                   background: ACCENT,
                   color: "#0a0a0a",
                   borderRadius: "9999px",
-                  padding: "12px 26px",
+                  padding: "13px 28px",
                   fontSize: "13px",
                   fontWeight: 500,
                 }}
@@ -357,6 +344,14 @@ export default function Home() {
               </span>
             </div>
           </div>
+
+          {/* Right half — PixelFlow animation, hard cut */}
+          <div className="relative" style={{ flex: "0 0 50%" }}>
+            <div style={{ position: "absolute", inset: 0 }}>
+              <PixelFlow />
+            </div>
+          </div>
+
         </section>
 
         {/* ── Marquee ticker ── */}
