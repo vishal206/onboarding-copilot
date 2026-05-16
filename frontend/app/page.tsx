@@ -463,37 +463,6 @@ export default function Home() {
 
         <OrganicHeroScene />
 
-        {/* Floating info card */}
-        <div
-          className="absolute z-20 hidden md:block"
-          style={{
-            bottom: "72px",
-            left: "max(28px, calc(50% - 560px))",
-            background: "white",
-            border: "1px solid rgba(0,0,0,0.08)",
-            borderRadius: "18px",
-            padding: "18px 20px",
-            boxShadow: "0 4px 28px rgba(0,0,0,0.07)",
-            maxWidth: "210px",
-          }}
-        >
-          <p style={{ fontSize: "11px", color: "#aaa", lineHeight: 1.65, marginBottom: "14px" }}>
-            Deploy an AI assistant from your docs in minutes. No engineering needed.
-          </p>
-          <button
-            className="flex items-center justify-center"
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: "#111",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            <IconPlayerPlay size={12} color="white" fill="white" />
-          </button>
-        </div>
       </section>
 
       {/* ── Marquee ticker ── */}
