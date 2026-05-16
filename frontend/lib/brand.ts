@@ -1,3 +1,3 @@
-export const APP_NAME = "Onboarding Co-Pilot";
-export const APP_NAME_SHORT = "Co-Pilot";
-export const APP_EMAIL = "hello@onboardingcopilot.com";
+export const APP_NAME = "Brudy";
+export const APP_NAME_SHORT = "Brudy";
+export const APP_EMAIL = "hello@brudy.ai";

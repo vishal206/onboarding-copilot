@@ -302,7 +302,7 @@ export default function Home() {
             <h1
               style={{
                 fontSize: "clamp(36px, 4.5vw, 72px)",
-                fontWeight: 300,
+                fontWeight: 600,
                 lineHeight: 1.08,
                 letterSpacing: "-0.03em",
                 color: HEADING,

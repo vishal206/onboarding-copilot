@@ -3,9 +3,9 @@ import { APP_NAME } from "@/lib/brand";
 type Size = "sm" | "md" | "lg";
 
 const sizeMap: Record<Size, { px: number; text: string }> = {
-  sm: { px: 20, text: "text-[13px]" },
-  md: { px: 24, text: "text-[14px]" },
-  lg: { px: 28, text: "text-[15px]" },
+  sm: { px: 16, text: "text-[16px]" },
+  md: { px: 18, text: "text-[18px]" },
+  lg: { px: 20, text: "text-[20px]" },
 };
 
 function HugIcon({ px }: { px: number }) {
@@ -41,7 +41,7 @@ export default function AppLogo({ size = "md", textClassName, className }: AppLo
   return (
     <span className={`flex items-center gap-2 ${className ?? ""}`}>
       <HugIcon px={px} />
-      <span className={`font-medium text-ink leading-tight ${text} ${textClassName ?? ""}`}>
+      <span className={`font-semibold text-ink leading-tight ${text} ${textClassName ?? ""}`} style={{ fontFamily: "var(--font-bricolage), system-ui, sans-serif" }}>
         {APP_NAME}
       </span>
     </span>

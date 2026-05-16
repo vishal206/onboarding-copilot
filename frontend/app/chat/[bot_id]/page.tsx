@@ -232,7 +232,7 @@ export default function PublicChatPage({
             <div className="w-2 h-2 rounded-full bg-teal" />
           </div>
           <span className="text-[13px] font-medium text-ink">{bot.name}</span>
-          <span className="ml-auto text-[11px] text-ink-3">Powered by Onboarding Co-Pilot</span>
+          <span className="ml-auto text-[11px] text-ink-3">Powered by Brudy</span>
         </div>
 
         {/* Messages */}
