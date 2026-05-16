@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { APP_NAME } from "@/lib/brand";
 
-const inter = Inter({ subsets: ["latin"] });
+const dmSans = DM_Sans({ subsets: ["latin"], weight: ["300", "400", "500"] });
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -32,7 +32,7 @@ export default function RootLayout({
             }}
           />
         </head>
-        <body className={inter.className}>{children}</body>
+        <body className={dmSans.className}>{children}</body>
       </html>
     </ClerkProvider>
   );
