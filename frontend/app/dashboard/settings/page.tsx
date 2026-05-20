@@ -1,11 +1,11 @@
 "use client";
 
-import { useAuth, UserButton } from "@clerk/nextjs";
+import { useAuth, UserButton, useClerk, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { IconCheck, IconExternalLink, IconSun, IconMoon, IconDeviceLaptop } from "@tabler/icons-react";
+import { IconCheck, IconExternalLink, IconSun, IconMoon, IconDeviceLaptop, IconLogout } from "@tabler/icons-react";
 
-type Tab = "plan" | "appearance";
+type Tab = "plan" | "appearance" | "account";
 type ThemeChoice = "light" | "dark" | "system";
 
 const PLAN_DETAILS: Record<string, {
@@ -47,6 +47,8 @@ const PLAN_DETAILS: Record<string, {
 
 export default function SettingsPage() {
   const { getToken } = useAuth();
+  const { signOut } = useClerk();
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState<Tab>("plan");
   const [currentPlan, setCurrentPlan] = useState<string>("free");
   const [themeChoice, setThemeChoice] = useState<ThemeChoice>("system");
@@ -97,7 +99,7 @@ export default function SettingsPage() {
         <div className="flex gap-10">
           {/* Sub-nav */}
           <nav className="w-48 shrink-0 flex flex-col gap-1 pt-0.5">
-            {(["plan", "appearance"] as Tab[]).map((tab) => (
+            {(["plan", "appearance", "account"] as Tab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -107,7 +109,7 @@ export default function SettingsPage() {
                     : "text-ink-2 hover:text-ink hover:bg-muted/60"
                 }`}
               >
-                {tab === "plan" ? "Plan" : "Appearance"}
+                {tab === "plan" ? "Plan" : tab === "appearance" ? "Appearance" : "Account"}
               </button>
             ))}
           </nav>
@@ -202,6 +204,39 @@ export default function SettingsPage() {
                       </button>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* ── Account tab ── */}
+            {activeTab === "account" && (
+              <div>
+                <h2
+                  className="text-ink mb-1"
+                  style={{ fontSize: "20px", fontWeight: 300, letterSpacing: "-0.02em" }}
+                >
+                  Account
+                </h2>
+                <p className="text-[15px] text-ink-2 mb-8">Manage your account settings.</p>
+
+                <div className="rounded-xl border border-line-3 p-5">
+                  <div className="flex items-center gap-3 mb-5">
+                    <UserButton />
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[15px] font-medium text-ink truncate">{user?.fullName ?? user?.firstName ?? ""}</span>
+                      <span className="text-[13px] text-ink-3 truncate">{user?.primaryEmailAddress?.emailAddress ?? ""}</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-line-3 pt-4">
+                    <button
+                      onClick={() => signOut({ redirectUrl: "/" })}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-[15px] text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                    >
+                      <IconLogout size={16} strokeWidth={1.75} />
+                      Log out
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
