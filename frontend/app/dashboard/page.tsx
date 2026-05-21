@@ -98,12 +98,11 @@ export default function DashboardPage() {
       {planLoaded && currentPlan === "free" && !bannerDismissed && (
         <div className="bg-warning-bg border-b border-warning-tx/20 px-8 py-3 flex items-center justify-between shrink-0">
           <p className="text-[15px] text-warning-tx">
-            You&apos;re on the free plan · limited to 3 documents &amp; 50
-            messages/month.
+            You&apos;re on the free plan · limited to 10 employees &amp; 50 pages indexed.
           </p>
           <div className="flex items-center gap-4 shrink-0 ml-4">
             <Link
-              href="/pricing"
+              href="/pricing" target="_blank" rel="noopener noreferrer"
               className="text-[15px] font-medium text-warning-tx hover:opacity-80 underline"
             >
               See pricing →

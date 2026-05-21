@@ -19,14 +19,14 @@ interface FileUploadProps {
   botId: string;
   onUploadSuccess: () => void;
   atLimit?: boolean;
-  maxDocs?: number | null;
+  maxPages?: number | null;
 }
 
 export default function FileUpload({
   botId,
   onUploadSuccess,
   atLimit = false,
-  maxDocs,
+  maxPages,
 }: FileUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,12 +128,12 @@ export default function FileUpload({
           <div className="w-9 h-9 rounded-lg bg-subtle flex items-center justify-center">
             <IconLock size={16} className="text-ink-3" strokeWidth={1.75} />
           </div>
-          <p className="text-[13px] font-medium text-ink">Document limit reached</p>
+          <p className="text-[13px] font-medium text-ink">Page limit reached</p>
           <p className="text-[13px] text-ink-2">
-            {maxDocs != null
-              ? `Your plan allows up to ${maxDocs} document${maxDocs === 1 ? "" : "s"}.`
-              : "You've reached your plan's document limit."}{" "}
-            <Link href="/pricing" className="text-ember-dark font-medium hover:underline">
+            {maxPages != null
+              ? `Your plan allows up to ${maxPages.toLocaleString()} pages indexed.`
+              : "You've reached your plan's page limit."}{" "}
+            <Link href="/pricing" target="_blank" rel="noopener noreferrer" className="text-ember-dark font-medium hover:underline">
               Upgrade your plan
             </Link>{" "}
             to upload more.
@@ -176,7 +176,7 @@ export default function FileUpload({
       {limitError && (
         <p className="mt-2 text-[13px] text-warning-tx">
           You&apos;ve hit your document limit.{" "}
-          <Link href="/pricing" className="font-medium underline hover:opacity-80">
+          <Link href="/pricing" target="_blank" rel="noopener noreferrer" className="font-medium underline hover:opacity-80">
             Upgrade your plan →
           </Link>
         </p>

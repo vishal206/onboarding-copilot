@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-from db.models import Bot, Conversation, Message
+from db.models import Bot, Conversation, Message, User
 from db.session import get_db
 from sqlalchemy import select, func, cast, Date, Integer
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
+from auth import get_current_user_id
 
 router = APIRouter(prefix="/bots", tags=["bots"])
 
@@ -23,6 +24,33 @@ class BotUpdate(BaseModel):
     hr_contact_name: Optional[str] = None
     hr_contact_email: Optional[str] = None
     hr_contact_slack: Optional[str] = None
+    employees_covered: Optional[int] = None
+
+
+@router.get("")
+async def list_bots(
+    clerk_user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all bots for the authenticated user."""
+    user_result = await db.execute(select(User).where(User.clerk_user_id == clerk_user_id))
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    result = await db.execute(select(Bot).where(Bot.user_id == user.id))
+    bots = result.scalars().all()
+    return [
+        {
+            "id": str(b.id),
+            "name": b.name,
+            "pages_indexed_count": b.pages_indexed_count,
+            "employees_covered": b.employees_covered,
+            "is_active": b.is_active,
+            "created_at": b.created_at,
+        }
+        for b in bots
+    ]
 
 
 @router.get("/{bot_id}")
@@ -41,6 +69,8 @@ async def get_bot(bot_id: str, db: AsyncSession = Depends(get_db)):
         "hr_contact_email": bot.hr_contact_email,
         "hr_contact_slack": bot.hr_contact_slack,
         "is_active": bot.is_active,
+        "pages_indexed_count": bot.pages_indexed_count,
+        "employees_covered": bot.employees_covered,
         "created_at": bot.created_at,
     }
 
@@ -65,6 +95,8 @@ async def update_bot(bot_id: str, body: BotUpdate, db: AsyncSession = Depends(ge
         bot.hr_contact_email = body.hr_contact_email
     if body.hr_contact_slack is not None:
         bot.hr_contact_slack = body.hr_contact_slack
+    if body.employees_covered is not None:
+        bot.employees_covered = body.employees_covered
 
     await db.commit()
     await db.refresh(bot)

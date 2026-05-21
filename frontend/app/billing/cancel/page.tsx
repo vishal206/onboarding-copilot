@@ -12,7 +12,7 @@ export default function BillingCancelPage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href="/pricing"
+            href="/pricing" target="_blank" rel="noopener noreferrer"
             className="inline-block bg-ember text-white font-medium px-6 py-3 rounded-full text-[14px] hover:opacity-80 transition-opacity"
           >
             View Plans

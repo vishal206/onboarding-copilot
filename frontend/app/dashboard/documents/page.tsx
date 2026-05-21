@@ -4,27 +4,40 @@ import { useAuth } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import FileUpload from "@/components/FileUpload";
 import DocumentList from "@/components/DocumentList";
-import { PLAN_MAX_DOCS } from "@/lib/plans";
+import { PLAN_MAX_PAGES } from "@/lib/plans";
 
 const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
 export default function DocumentsPage() {
   const { getToken } = useAuth();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [docCount, setDocCount] = useState(0);
   const [currentPlan, setCurrentPlan] = useState<string>("free");
+  const [pagesUsed, setPagesUsed] = useState<number>(0);
 
   useEffect(() => {
-    getToken().then((token) => {
+    getToken().then(async (token) => {
       if (!token) return;
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/billing/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => { if (data?.plan) setCurrentPlan(data.plan); })
-        .catch(() => {});
+      const [billingRes, botRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/billing/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${TEST_BOT_ID}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      if (billingRes.ok) {
+        const data = await billingRes.json();
+        if (data?.plan) setCurrentPlan(data.plan);
+      }
+      if (botRes.ok) {
+        const bot = await botRes.json();
+        setPagesUsed(bot.pages_indexed_count ?? 0);
+      }
     });
-  }, [getToken]);
+  }, [getToken, refreshTrigger]);
+
+  const maxPages = PLAN_MAX_PAGES[currentPlan];
+  const atLimit = maxPages != null && pagesUsed >= maxPages;
 
   return (
     <div className="min-h-screen">
@@ -36,9 +49,9 @@ export default function DocumentsPage() {
               Upload your onboarding materials. The AI answers from these files.
             </p>
           </div>
-          {PLAN_MAX_DOCS[currentPlan] != null && (
+          {maxPages != null && (
             <span className="text-[15px] text-ink-3 shrink-0 ml-4">
-              {docCount} / {PLAN_MAX_DOCS[currentPlan]} used
+              {pagesUsed} / {maxPages} pages used
             </span>
           )}
         </div>
@@ -46,13 +59,12 @@ export default function DocumentsPage() {
         <FileUpload
           botId={TEST_BOT_ID}
           onUploadSuccess={() => setRefreshTrigger((prev) => prev + 1)}
-          atLimit={PLAN_MAX_DOCS[currentPlan] != null && docCount >= (PLAN_MAX_DOCS[currentPlan] as number)}
-          maxDocs={PLAN_MAX_DOCS[currentPlan]}
+          atLimit={atLimit}
+          maxPages={maxPages}
         />
         <DocumentList
           botId={TEST_BOT_ID}
           refreshTrigger={refreshTrigger}
-          onDocCountChange={setDocCount}
         />
       </div>
     </div>

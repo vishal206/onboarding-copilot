@@ -103,7 +103,7 @@ export default function Sidebar() {
 
         {/* Plan pill */}
         <Link
-          href="/pricing"
+          href="/pricing" target="_blank" rel="noopener noreferrer"
           className={`flex items-center gap-2 w-full rounded-full px-3 py-1.5 text-[12px] font-medium transition-opacity hover:opacity-80 ${planLabel.className}`}
         >
           <IconSparkles size={13} />

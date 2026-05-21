@@ -3,15 +3,18 @@ from datetime import datetime
 
 from services.openai import OpenAi
 from services.prompt_builder import PromptBuilder
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from services.rag import RAGPipeline
 from pydantic import BaseModel
-from db.models import Bot, Conversation, Message, User
+from db.models import Bot, Conversation, Message, UsageEvent
 from db.session import AsyncSessionLocal, get_db
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import StreamingResponse
-from limits import PLAN_LIMITS
+from rate_limit import limiter
+
+# Daily per-bot kill switch: 200K tokens/day
+DAILY_TOKEN_CAP = 200_000
 
 router = APIRouter(prefix="/query", tags=["query"])
 
@@ -23,8 +26,27 @@ class QueryRequest(BaseModel):
     conversation_history: list[dict] = []
 
 
+async def _daily_tokens_used(bot_id: str, db: AsyncSession) -> int:
+    day_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    result = await db.execute(
+        select(func.coalesce(func.sum(UsageEvent.input_tokens + UsageEvent.output_tokens), 0))
+        .where(UsageEvent.bot_id == bot_id)
+        .where(UsageEvent.created_at >= day_start)
+    )
+    return result.scalar() or 0
+
+
 @router.post("/chat")
-async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("30/minute")
+async def query(request: QueryRequest, req: Request, db: AsyncSession = Depends(get_db)):
+
+    # Daily token cap kill switch
+    daily_tokens = await _daily_tokens_used(request.bot_id, db)
+    if daily_tokens >= DAILY_TOKEN_CAP:
+        raise HTTPException(
+            status_code=429,
+            detail="This bot has reached its daily usage limit. Please try again tomorrow.",
+        )
 
     rag = RAGPipeline(request.bot_id)
     chunks = await rag.query(request.question)
@@ -33,30 +55,6 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
     botObject = result.scalar_one_or_none()
     if not botObject:
         raise HTTPException(status_code=404, detail="Bot not found")
-
-    # Enforce monthly message limit for the bot owner
-    user_result = await db.execute(select(User).where(User.id == botObject.user_id))
-    bot_owner = user_result.scalar_one_or_none()
-    if bot_owner:
-        plan = bot_owner.plan or "free"
-        max_messages = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])["max_messages_per_month"]
-        if max_messages is not None:
-            now = datetime.utcnow()
-            month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            monthly_count_result = await db.execute(
-                select(func.count(Message.id))
-                .join(Conversation, Message.conversation_id == Conversation.id)
-                .join(Bot, Conversation.bot_id == Bot.id)
-                .where(Bot.user_id == bot_owner.id)
-                .where(Message.role == "user")
-                .where(Message.created_at >= month_start)
-            )
-            monthly_count = monthly_count_result.scalar()
-            if monthly_count >= max_messages:
-                raise HTTPException(
-                    status_code=403,
-                    detail=f"Monthly message limit reached. Your {plan} plan allows {max_messages} messages per month. Upgrade your plan to continue.",
-                )
 
     prompt = PromptBuilder(
         bot=botObject,
@@ -86,11 +84,11 @@ async def query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
     async def stream_and_save():
         full_response = ""
 
-        async for token in OpenAi(prompt).generate():
+        async for token in OpenAi(prompt, bot_id=request.bot_id).generate():
             full_response += token
             yield token
 
-        sources = list({chunk["filename"] for chunk in chunks})  # deduplicate
+        sources = list({chunk["filename"] for chunk in chunks})
         yield f"\n\n__SOURCES__:{json.dumps({'sources': sources})}"
 
         if not chunks and (

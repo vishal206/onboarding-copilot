@@ -2,17 +2,21 @@ import os
 import httpx
 from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from rate_limit import limiter
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from dotenv import load_dotenv
 from routers import documents, webhooks, query, bots, billing
-
 
 from db.session import get_db
 
 load_dotenv()
 
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

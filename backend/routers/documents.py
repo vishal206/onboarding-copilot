@@ -11,13 +11,13 @@ from fastapi import (
     BackgroundTasks,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select
 from db.session import get_db
 from db.models import Document, Bot, DocumentChunk, User
 from services.storage import delete_file, upload_file
 from services.parser import Parser
 from auth import get_current_user_id
-from limits import PLAN_LIMITS
+from plan_limits import PLAN_LIMITS
 import uuid
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -76,19 +76,14 @@ async def upload_document(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error creating bot: {str(e)}")
 
-    # Enforce doc limit for this bot
+    # Enforce pages limit for this bot
     plan = user.plan or "free"
-    max_docs = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])["max_docs"]
-    if max_docs is not None:
-        doc_count_result = await db.execute(
-            select(func.count()).where(Document.bot_id == bot_id)
+    max_pages = PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])["max_pages_indexed"]
+    if bot and bot.pages_indexed_count >= max_pages:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Page limit reached. Your {plan} plan allows {max_pages} pages indexed. Upgrade your plan to add more documents.",
         )
-        doc_count = doc_count_result.scalar()
-        if doc_count >= max_docs:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Document limit reached. Your {plan} plan allows {max_docs} document(s) per bot. Upgrade your plan to add more.",
-            )
 
     # Upload to R2
     file_key = f"{bot_id}/{uuid.uuid4()}_{file.filename}"

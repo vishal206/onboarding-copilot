@@ -12,36 +12,31 @@ const PLAN_DETAILS: Record<string, {
   label: string;
   price: string;
   features: string[];
-  docsLimit: string;
-  messagesLimit: string;
+  maxPages: number | null;
 }> = {
   free: {
     label: "Free",
     price: "$0 / month",
-    features: ["1 onboarding bot", "3 document uploads", "50 messages / month", "Community support"],
-    docsLimit: "3 documents",
-    messagesLimit: "50 messages / month",
+    features: ["Unlimited conversations", "Web chat", "10 employees covered", "50 pages indexed", "30-day chat history", "Community support"],
+    maxPages: 50,
   },
   starter: {
     label: "Starter",
-    price: "$299 / month",
-    features: ["1 onboarding bot", "25 document uploads", "500 messages / month", "Email support", "Analytics dashboard"],
-    docsLimit: "25 documents",
-    messagesLimit: "500 messages / month",
+    price: "$49 / month",
+    features: ["Unlimited conversations", "Web chat", "Slack & Teams (coming soon)", "50 employees covered", "500 pages indexed", "Remove branding", "1-year chat history", "Email support", "Full analytics"],
+    maxPages: 500,
   },
   growth: {
     label: "Growth",
-    price: "$499 / month",
-    features: ["5 onboarding bots", "100 document uploads", "2,000 messages / month", "Priority email support", "Advanced analytics", "Custom bot branding"],
-    docsLimit: "100 documents",
-    messagesLimit: "2,000 messages / month",
+    price: "$149 / month",
+    features: ["Unlimited conversations", "Web chat", "Slack & Teams (coming soon)", "200 employees covered", "2,500 pages indexed", "Remove branding", "1-year chat history", "Email support", "Full analytics"],
+    maxPages: 2500,
   },
   scale: {
     label: "Scale",
-    price: "$799 / month",
-    features: ["Unlimited onboarding bots", "Unlimited document uploads", "Unlimited messages", "Dedicated support", "SSO & team management"],
-    docsLimit: "Unlimited",
-    messagesLimit: "Unlimited",
+    price: "$399 / month",
+    features: ["Unlimited conversations", "Web chat", "Slack & Teams (coming soon)", "1,000 employees covered", "10,000 pages indexed", "SSO & custom domain", "Unlimited chat history", "Email support", "Full analytics"],
+    maxPages: 10000,
   },
 };
 
@@ -52,6 +47,9 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("plan");
   const [currentPlan, setCurrentPlan] = useState<string>("free");
   const [themeChoice, setThemeChoice] = useState<ThemeChoice>("system");
+
+  // Bot usage state
+  const [pagesIndexed, setPagesIndexed] = useState<number>(0);
 
   useEffect(() => {
     try {
@@ -75,18 +73,35 @@ export default function SettingsPage() {
   }
 
   useEffect(() => {
-    getToken().then((token) => {
+    getToken().then(async (token) => {
       if (!token) return;
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/billing/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((data) => { if (data?.plan) setCurrentPlan(data.plan); })
-        .catch(() => {});
+
+      const [billingRes, botsRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/billing/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      if (billingRes.ok) {
+        const data = await billingRes.json();
+        if (data?.plan) setCurrentPlan(data.plan);
+      }
+
+      if (botsRes.ok) {
+        const bots = await botsRes.json();
+        if (bots?.length > 0) {
+          setPagesIndexed(bots[0].pages_indexed_count ?? 0);
+        }
+      }
     });
   }, [getToken]);
 
   const plan = PLAN_DETAILS[currentPlan] ?? PLAN_DETAILS.free;
+  const pagesPercent = plan.maxPages ? Math.min((pagesIndexed / plan.maxPages) * 100, 100) : 0;
+  const pagesNearLimit = plan.maxPages ? pagesIndexed / plan.maxPages >= 0.8 : false;
 
   return (
     <div className="min-h-screen">
@@ -244,6 +259,7 @@ export default function SettingsPage() {
             {/* ── Plan tab ── */}
             {activeTab === "plan" && (
               <div className="space-y-6">
+                {/* Current plan card */}
                 <div className="rounded-xl border border-line-3 p-5">
                   <div className="flex items-start justify-between mb-4">
                     <div>
@@ -252,7 +268,7 @@ export default function SettingsPage() {
                       <p className="text-[15px] text-ink-2 mt-0.5">{plan.price}</p>
                     </div>
                     <Link
-                      href="/pricing"
+                      href="/pricing" target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 text-[15px] font-medium px-4 py-2 rounded-full bg-ember text-white hover:opacity-80 transition-opacity shrink-0"
                     >
                       {currentPlan === "free" ? "Upgrade plan" : "Change plan"}
@@ -273,18 +289,34 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-line-3 p-5">
-                  <p className="text-[15px] font-medium text-ink mb-4">Usage limits</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-muted rounded-lg px-3 py-2.5">
-                      <p className="text-[13px] text-ink-3 mb-1">Documents</p>
-                      <p className="text-[17px] font-medium text-ink">{plan.docsLimit}</p>
+                {/* Usage card */}
+                <div className="rounded-xl border border-line-3 p-5 space-y-5">
+                  <p className="text-[15px] font-medium text-ink">Usage</p>
+
+                  {/* Pages indexed */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[13px] text-ink-3">Pages indexed</p>
+                      <p className={`text-[13px] font-medium ${pagesNearLimit ? "text-amber-500" : "text-ink"}`}>
+                        {pagesIndexed.toLocaleString()} / {plan.maxPages ? plan.maxPages.toLocaleString() : "∞"}
+                      </p>
                     </div>
-                    <div className="bg-muted rounded-lg px-3 py-2.5">
-                      <p className="text-[13px] text-ink-3 mb-1">Messages</p>
-                      <p className="text-[17px] font-medium text-ink">{plan.messagesLimit}</p>
-                    </div>
+                    {plan.maxPages && (
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${pagesNearLimit ? "bg-amber-400" : "bg-teal"}`}
+                          style={{ width: `${pagesPercent}%` }}
+                        />
+                      </div>
+                    )}
+                    {pagesNearLimit && (
+                      <p className="text-[12px] text-amber-500 mt-1.5">
+                        Approaching your page limit.{" "}
+                        <Link href="/pricing" target="_blank" rel="noopener noreferrer" className="underline">Upgrade to add more.</Link>
+                      </p>
+                    )}
                   </div>
+
                 </div>
               </div>
             )}

@@ -52,50 +52,52 @@ const PLANS = [
     price: 0,
     plan: "free",
     features: [
-      "1 onboarding bot",
-      "3 document uploads",
-      "50 messages / month",
+      "Unlimited conversations",
+      "10 employees covered",
+      "50 pages indexed",
+      "30-day chat history",
       "Community support",
     ],
   },
   {
     name: "Starter",
-    price: 299,
+    price: 49,
     plan: "starter",
     features: [
-      "1 onboarding bot",
-      "25 document uploads",
-      "500 messages / month",
+      "Unlimited conversations",
+      "50 employees covered",
+      "500 pages indexed",
+      "Remove branding",
       "Email support",
-      "Analytics dashboard",
+      "Full analytics",
     ],
   },
   {
     name: "Growth",
-    price: 499,
+    price: 149,
     plan: "growth",
     highlighted: true,
     features: [
-      "5 onboarding bots",
-      "100 document uploads",
-      "2,000 messages / month",
-      "Priority email support",
-      "Advanced analytics",
-      "Custom bot branding",
+      "Unlimited conversations",
+      "200 employees covered",
+      "2,500 pages indexed",
+      "Remove branding",
+      "Email support",
+      "Full analytics",
     ],
   },
   {
     name: "Scale",
-    price: 799,
+    price: 399,
     plan: "scale",
     features: [
-      "Unlimited onboarding bots",
-      "Unlimited document uploads",
-      "Unlimited messages",
-      "Dedicated support",
-      "Advanced analytics",
-      "Custom bot branding",
-      "SSO & team management",
+      "Unlimited conversations",
+      "1,000 employees covered",
+      "10,000 pages indexed",
+      "SSO & custom domain",
+      "Unlimited chat history",
+      "Email support",
+      "Full analytics",
     ],
   },
 ];
@@ -156,7 +158,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "How does billing work?",
-    a: "Monthly subscription with no contracts. Upgrade, downgrade, or cancel at any time. Unused message credits don't roll over.",
+    a: "Monthly subscription with no contracts. Upgrade, downgrade, or cancel at any time. All plans include unlimited conversations — you're only gated on employees covered and pages indexed.",
   },
 ];
 
@@ -574,7 +576,7 @@ export default function Home() {
                 Simple, transparent pricing
               </h2>
               <p className="mt-3 text-[14px]" style={{ color: C.MUTED, textShadow: C.TEXT_SHADOW }}>
-                Choose the plan that fits your team. Upgrade or cancel anytime.
+                Unlimited conversations on every plan. Starts at $49/mo — upgrade or cancel anytime.
               </p>
             </div>
 
@@ -633,6 +635,19 @@ export default function Home() {
                   </Link>
                 </div>
               ))}
+            </div>
+
+            <div className="text-center mt-8">
+              <Link
+                href="/pricing" target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-[13px] transition-colors"
+                style={{ color: C.MUTED }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = C.HEADING)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = C.MUTED)}
+              >
+                See full plan details
+                <span style={{ color: ACCENT }}>→</span>
+              </Link>
             </div>
           </div>
         </section>

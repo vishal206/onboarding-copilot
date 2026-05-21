@@ -5,9 +5,9 @@ export const PLAN_LABELS: Record<string, { label: string; className: string }> =
   scale:   { label: "Scale",   className: "bg-purple-100 text-purple-700" },
 };
 
-export const PLAN_MAX_DOCS: Record<string, number | null> = {
-  free:    3,
-  starter: 25,
-  growth:  100,
+export const PLAN_MAX_PAGES: Record<string, number | null> = {
+  free:    50,
+  starter: 500,
+  growth:  2500,
   scale:   null,
 };

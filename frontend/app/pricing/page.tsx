@@ -4,7 +4,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconInfinity } from "@tabler/icons-react";
 import AppLogo from "@/components/AppLogo";
 
 const PLANS = [
@@ -13,54 +13,74 @@ const PLANS = [
     price: 0,
     plan: "free",
     price_id: null,
+    description: "Try it out",
+    limits: "10 employees · 50 pages",
     features: [
-      "1 onboarding bot",
-      "3 document uploads",
-      "50 messages / month",
+      "Unlimited conversations",
+      "Web chat channel",
+      "10 employees covered",
+      "50 pages indexed",
+      "30-day chat history",
       "Community support",
     ],
   },
   {
     name: "Starter",
-    price: 299,
+    price: 49,
     plan: "starter",
-    price_id: "price_1TNmML2YapZL05LZDdnsXsD3",
+    price_id: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID ?? "",
+    description: "Small teams",
+    limits: "50 employees · 500 pages",
     features: [
-      "1 onboarding bot",
-      "25 document uploads",
-      "500 messages / month",
+      "Unlimited conversations",
+      "Web chat channel",
+      "Slack & Teams (coming soon)",
+      "50 employees covered",
+      "500 pages indexed",
+      "Remove 'Powered by' branding",
+      "1-year chat history",
       "Email support",
-      "Analytics dashboard",
+      "Full analytics dashboard",
     ],
   },
   {
     name: "Growth",
-    price: 499,
+    price: 149,
     plan: "growth",
-    price_id: "price_1TNmNh2YapZL05LZa8793rGx",
+    price_id: process.env.NEXT_PUBLIC_STRIPE_GROWTH_PRICE_ID ?? "",
     highlighted: true,
+    description: "Scaling companies",
+    limits: "200 employees · 2,500 pages",
     features: [
-      "5 onboarding bots",
-      "100 document uploads",
-      "2,000 messages / month",
-      "Priority email support",
-      "Advanced analytics",
-      "Custom bot branding",
+      "Unlimited conversations",
+      "Web chat channel",
+      "Slack & Teams (coming soon)",
+      "200 employees covered",
+      "2,500 pages indexed",
+      "Remove 'Powered by' branding",
+      "1-year chat history",
+      "Email support",
+      "Full analytics dashboard",
     ],
   },
   {
     name: "Scale",
-    price: 799,
+    price: 399,
     plan: "scale",
-    price_id: "price_1TNmOL2YapZL05LZ4NxJlMCY",
+    price_id: process.env.NEXT_PUBLIC_STRIPE_SCALE_PRICE_ID ?? "",
+    description: "Enterprise",
+    limits: "1,000 employees · 10,000 pages",
     features: [
-      "Unlimited onboarding bots",
-      "Unlimited document uploads",
-      "Unlimited messages",
-      "Dedicated support",
-      "Advanced analytics",
-      "Custom bot branding",
-      "SSO & team management",
+      "Unlimited conversations",
+      "Web chat channel",
+      "Slack & Teams (coming soon)",
+      "1,000 employees covered",
+      "10,000 pages indexed",
+      "Remove 'Powered by' branding",
+      "Unlimited chat history",
+      "SSO & custom domain",
+      "Email support",
+      "Full analytics dashboard",
     ],
   },
 ];
@@ -118,21 +138,26 @@ export default function PricingPage() {
     <main className="min-h-screen bg-surface">
       {/* Nav */}
       <nav className="border-b border-line-3 px-6 py-4 flex justify-between items-center">
-        <Link href="/dashboard">
+        <Link href="/">
           <AppLogo size="lg" />
-        </Link>
-        <Link href="/dashboard" className="text-[13px] text-ink-2 hover:text-ink transition-colors">
-          ← Back to dashboard
         </Link>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-[28px] font-medium text-ink mb-3">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="text-center mb-2">
+          <h1 className="text-[24px] font-medium text-ink mb-1">
             Simple, transparent pricing
           </h1>
-          <p className="text-[15px] text-ink-2">
+          <p className="text-[14px] text-ink-2">
             Choose the plan that fits your team. Upgrade or cancel anytime.
+          </p>
+        </div>
+
+        {/* Unlimited conversations callout */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <IconInfinity size={14} className="text-teal" strokeWidth={2} />
+          <p className="text-[13px] font-medium text-teal">
+            Unlimited conversations on every plan — no message caps, ever
           </p>
         </div>
 
@@ -148,21 +173,21 @@ export default function PricingPage() {
             return (
               <div
                 key={p.plan}
-                className={`rounded-xl border p-6 flex flex-col ${
+                className={`rounded-xl border p-4 flex flex-col ${
                   p.highlighted
                     ? "bg-ember border-ember"
                     : "bg-surface border-line-3"
                 }`}
               >
-                <div className="flex items-center gap-2 mb-2 min-h-5">
+                <div className="flex items-center gap-2 mb-1.5 min-h-4">
                   {p.highlighted && (
-                    <span className="text-[11px] font-medium text-white/70 uppercase tracking-wide">
+                    <span className="text-[10px] font-medium text-white/70 uppercase tracking-wide">
                       Most popular
                     </span>
                   )}
                   {isCurrent && (
                     <span
-                      className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                         p.highlighted
                           ? "bg-white/20 text-white"
                           : "bg-teal-light text-teal-dark"
@@ -173,31 +198,38 @@ export default function PricingPage() {
                   )}
                 </div>
 
-                <h2 className={`text-[20px] font-medium mb-1 ${p.highlighted ? "text-white" : "text-ink"}`}>
+                <h2 className={`text-[17px] font-medium mb-0.5 ${p.highlighted ? "text-white" : "text-ink"}`}>
                   {p.name}
                 </h2>
-                <div className="flex items-end gap-1 mb-6">
+                <p className={`text-[11px] mb-2 ${p.highlighted ? "text-white/60" : "text-ink-3"}`}>
+                  {p.description}
+                </p>
+
+                <div className="flex items-end gap-1 mb-0.5">
                   {p.price === 0 ? (
-                    <span className={`text-[32px] font-medium ${p.highlighted ? "text-white" : "text-ink"}`}>
+                    <span className={`text-[26px] font-medium ${p.highlighted ? "text-white" : "text-ink"}`}>
                       Free
                     </span>
                   ) : (
                     <>
-                      <span className={`text-[32px] font-medium ${p.highlighted ? "text-white" : "text-ink"}`}>
+                      <span className={`text-[26px] font-medium ${p.highlighted ? "text-white" : "text-ink"}`}>
                         ${p.price}
                       </span>
-                      <span className={`text-[13px] mb-1.5 ${p.highlighted ? "text-white/60" : "text-ink-3"}`}>
+                      <span className={`text-[12px] mb-1 ${p.highlighted ? "text-white/60" : "text-ink-3"}`}>
                         /mo
                       </span>
                     </>
                   )}
                 </div>
+                <p className={`text-[11px] mb-4 ${p.highlighted ? "text-white/50" : "text-ink-3"}`}>
+                  {p.limits}
+                </p>
 
-                <ul className="space-y-2.5 mb-8 flex-1">
+                <ul className="space-y-1.5 mb-4 flex-1">
                   {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-[13px]">
+                    <li key={f} className="flex items-start gap-1.5 text-[12px]">
                       <IconCheck
-                        size={13}
+                        size={12}
                         className={`mt-0.5 shrink-0 ${p.highlighted ? "text-white/70" : "text-teal"}`}
                         strokeWidth={2}
                       />
@@ -208,7 +240,7 @@ export default function PricingPage() {
 
                 {isCurrent ? (
                   <div
-                    className={`w-full py-2.5 rounded-lg text-[13px] font-medium text-center ${
+                    className={`w-full py-2 rounded-lg text-[12px] font-medium text-center ${
                       p.highlighted ? "bg-white/20 text-white" : "bg-muted text-ink-3"
                     }`}
                   >
@@ -218,19 +250,31 @@ export default function PricingPage() {
                   <button
                     onClick={() => handleCheckout(p.plan, p.price_id as string)}
                     disabled={loading === p.plan}
-                    className={`w-full py-2.5 rounded-lg text-[13px] font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
-                      p.highlighted
-                        ? "bg-white text-ember hover:bg-ember-light"
-                        : "bg-ember text-white hover:opacity-90"
-                    }`}
+                    className={`w-full py-2 rounded-lg text-[12px] font-medium cursor-pointer
+                      transition-all duration-150
+                      active:scale-95 active:brightness-95
+                      disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
+                      ${p.highlighted
+                        ? "bg-white text-ember hover:bg-white/90 hover:shadow-md"
+                        : "bg-ink text-surface hover:opacity-80 hover:shadow-md"
+                      }`}
                   >
-                    {loading === p.plan ? "Redirecting…" : `Get ${p.name}`}
+                    {loading === p.plan ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                        Redirecting…
+                      </span>
+                    ) : `Get ${p.name}`}
                   </button>
                 ) : null}
               </div>
             );
           })}
         </div>
+
+        <p className="text-center text-[12px] text-ink-3 mt-4">
+          Starting at $49/mo · No message caps · Cancel anytime
+        </p>
       </div>
     </main>
   );
