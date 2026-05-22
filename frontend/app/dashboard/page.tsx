@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { COLORS } from "@/lib/colors";
-import { IconCopy, IconCheck } from "@tabler/icons-react";
+import { IconCopy, IconCheck, IconExternalLink } from "@tabler/icons-react";
 import {
   LineChart,
   Line,
@@ -186,22 +186,33 @@ export default function DashboardPage() {
               <p className="text-[15px] font-medium text-ink mb-0.5">Bot link</p>
               <p className="text-[13px] text-ink-3 font-mono">{`/chat/${TEST_BOT_ID}`}</p>
             </div>
-            <button
-              onClick={handleCopyLink}
-              className="flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-full border border-line-2 bg-surface hover:bg-muted transition-colors text-ink shrink-0"
-            >
-              {linkCopied ? (
-                <>
-                  <IconCheck size={13} />
-                  <span>Copied</span>
-                </>
-              ) : (
-                <>
-                  <IconCopy size={13} />
-                  <span>Copy link</span>
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href={`/chat/${TEST_BOT_ID}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-full border border-line-2 bg-surface hover:bg-muted transition-colors text-ink"
+              >
+                <IconExternalLink size={13} />
+                <span>Open</span>
+              </Link>
+              <button
+                onClick={handleCopyLink}
+                className="flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-full border border-line-2 bg-surface hover:bg-muted transition-colors text-ink"
+              >
+                {linkCopied ? (
+                  <>
+                    <IconCheck size={13} />
+                    <span>Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <IconCopy size={13} />
+                    <span>Copy link</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </section>
       </div>

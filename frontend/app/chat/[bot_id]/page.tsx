@@ -5,6 +5,7 @@ import { use } from "react";
 import ReactMarkdown from "react-markdown";
 import posthog from "posthog-js";
 import { IconFileText, IconSend } from "@tabler/icons-react";
+import AppLogo, { HugIcon } from "@/components/AppLogo";
 
 interface BotInfo {
   id: string;
@@ -200,8 +201,8 @@ export default function PublicChatPage({
     return (
       <main className="min-h-screen bg-muted flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="w-10 h-10 rounded-xl bg-ember flex items-center justify-center mx-auto mb-4">
-            <div className="w-3 h-3 rounded-full bg-teal" />
+          <div className="flex justify-center mb-4">
+            <AppLogo size="lg" />
           </div>
           <h1 className="text-[20px] font-medium text-ink mb-2">Bot not found</h1>
           <p className="text-[13px] text-ink-2">
@@ -224,121 +225,152 @@ export default function PublicChatPage({
     );
   }
 
+  const isWelcomeOnly =
+    messages.length === 0 ||
+    (messages.length === 1 && messages[0].role === "assistant");
+
   return (
     <main className="h-screen bg-surface flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-2.5 px-5 py-3 border-b border-line-3 shrink-0 bg-surface">
-          <div className="w-7 h-7 rounded-lg bg-ember flex items-center justify-center shrink-0">
-            <div className="w-2 h-2 rounded-full bg-teal" />
-          </div>
-          <span className="text-[13px] font-medium text-ink">{bot.name}</span>
-          <span className="ml-auto text-[11px] text-ink-3">Powered by Brudy</span>
+          <AppLogo size="sm" iconOnly />
+          <span className="text-[18px] font-semibold text-ink" style={{ fontFamily: "var(--font-bricolage), system-ui, sans-serif" }}>{bot.name}</span>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-5 py-5 flex flex-col gap-3">
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              {msg.role === "assistant" && (
-                <div className="w-7 h-7 rounded-lg bg-ember flex items-center justify-center shrink-0 mr-2 mt-0.5">
-                  <div className="w-2 h-2 rounded-full bg-teal" />
-                </div>
-              )}
+        {/* Welcome / chat area */}
+        {isWelcomeOnly ? (
+          <div className="flex-1 flex flex-col items-center justify-center px-5 gap-6">
+            {messages[0]?.content && (
+              <div className="flex items-center gap-3 max-w-lg">
+                <HugIcon px={48} />
+                <p className="text-[28px] font-semibold text-ink leading-snug" style={{ fontFamily: "var(--font-bricolage), system-ui, sans-serif" }}>
+                  {messages[0].content}
+                </p>
+              </div>
+            )}
+            {/* Input bar — centered */}
+            <div className="w-full max-w-2xl flex gap-2 bg-muted rounded-full border border-line-2 px-4 py-2 mt-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                placeholder="Ask a question…"
+                disabled={loading}
+                className="flex-1 text-[13px] bg-transparent focus:outline-none disabled:opacity-50 text-ink placeholder:text-ink-3"
+              />
+              <button
+                onClick={sendMessage}
+                disabled={loading || !input.trim()}
+                className="bg-ember text-white text-[13px] font-medium px-4 py-1.5 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0 flex items-center gap-1.5"
+              >
+                <IconSend size={13} />
+                Send
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex-1 overflow-y-auto">
+              <div className="max-w-2xl mx-auto px-5 py-5 flex flex-col gap-3">
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    {msg.role === "assistant" && (
+                      <div className="shrink-0 mr-2 mt-0.5">
+                        <HugIcon px={28} />
+                      </div>
+                    )}
 
-              <div className="flex flex-col gap-1.5" style={{ maxWidth: msg.role === "user" ? "75%" : "85%" }}>
-                {/* Bubble */}
-                <div
-                  className={`px-3.5 py-2.5 text-[13px] leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-ember text-white"
-                      : "bg-muted text-ink"
-                  }`}
-                  style={{
-                    borderRadius: msg.role === "user"
-                      ? "12px 4px 12px 12px"
-                      : "4px 12px 12px 12px",
-                  }}
-                >
-                  {msg.content ? (
-                    msg.role === "assistant" ? (
-                      <ReactMarkdown
-                        components={{
-                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                          ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
-                          ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
-                          li: ({ children }) => <li>{children}</li>,
-                          strong: ({ children }) => <strong className="font-medium">{children}</strong>,
-                          code: ({ children }) => (
-                            <code className="bg-subtle rounded px-1 py-0.5 text-[12px] font-mono">{children}</code>
-                          ),
+                    <div className="flex flex-col gap-1.5" style={{ maxWidth: msg.role === "user" ? "75%" : "85%" }}>
+                      <div
+                        className={`px-3.5 py-2.5 text-[13px] leading-relaxed ${
+                          msg.role === "user" ? "bg-ember text-white" : "bg-muted text-ink"
+                        }`}
+                        style={{
+                          borderRadius: msg.role === "user"
+                            ? "12px 4px 12px 12px"
+                            : "4px 12px 12px 12px",
                         }}
                       >
-                        {msg.content}
-                      </ReactMarkdown>
-                    ) : (
-                      msg.content
-                    )
-                  ) : (
-                    <span className="inline-flex gap-1 items-center text-ink-3">
-                      <span className="animate-bounce [animation-delay:0ms]">●</span>
-                      <span className="animate-bounce [animation-delay:150ms]">●</span>
-                      <span className="animate-bounce [animation-delay:300ms]">●</span>
-                    </span>
-                  )}
-                </div>
+                        {msg.content ? (
+                          msg.role === "assistant" ? (
+                            <ReactMarkdown
+                              components={{
+                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                                li: ({ children }) => <li>{children}</li>,
+                                strong: ({ children }) => <strong className="font-medium">{children}</strong>,
+                                code: ({ children }) => (
+                                  <code className="bg-subtle rounded px-1 py-0.5 text-[12px] font-mono">{children}</code>
+                                ),
+                              }}
+                            >
+                              {msg.content}
+                            </ReactMarkdown>
+                          ) : (
+                            msg.content
+                          )
+                        ) : (
+                          <span className="inline-flex gap-1 items-center text-ink-3">
+                            <span className="animate-bounce [animation-delay:0ms]">●</span>
+                            <span className="animate-bounce [animation-delay:150ms]">●</span>
+                            <span className="animate-bounce [animation-delay:300ms]">●</span>
+                          </span>
+                        )}
+                      </div>
 
-                {/* HR fallback card */}
-                {msg.role === "assistant" && msg.hrContact && (
-                  <HRFallbackCard contact={msg.hrContact} />
-                )}
+                      {msg.role === "assistant" && msg.hrContact && (
+                        <HRFallbackCard contact={msg.hrContact} />
+                      )}
 
-                {/* Source citation pills */}
-                {msg.sources && msg.sources.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 px-1">
-                    {msg.sources.map((source, sIdx) => (
-                      <span
-                        key={sIdx}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.75 rounded-full bg-teal-light text-teal-dark"
-                      >
-                        <IconFileText size={11} />
-                        {source}
-                      </span>
-                    ))}
+                      {msg.sources && msg.sources.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 px-1">
+                          {msg.sources.map((source, sIdx) => (
+                            <span
+                              key={sIdx}
+                              className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.75 rounded-full bg-teal-light text-teal-dark"
+                            >
+                              <IconFileText size={11} />
+                              {source}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                ))}
+                <div ref={bottomRef} />
               </div>
             </div>
-          ))}
-          <div ref={bottomRef} />
-        </div>
-        </div>
 
-        {/* Input bar */}
-        <div className="border-t border-line-3 shrink-0 px-5 py-4 bg-surface">
-          <div className="max-w-2xl mx-auto flex gap-2 bg-muted rounded-full border border-line-2 px-4 py-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              placeholder="Ask a question…"
-              disabled={loading}
-              className="flex-1 text-[13px] bg-transparent focus:outline-none disabled:opacity-50 text-ink placeholder:text-ink-3"
-            />
-            <button
-              onClick={sendMessage}
-              disabled={loading || !input.trim()}
-              className="bg-ember text-white text-[13px] font-medium px-4 py-1.5 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0 flex items-center gap-1.5"
-            >
-              <IconSend size={13} />
-              Send
-            </button>
-          </div>
-        </div>
+            {/* Input bar — pinned to bottom */}
+            <div className="border-t border-line-3 shrink-0 px-5 py-4 bg-surface">
+              <div className="max-w-2xl mx-auto flex gap-2 bg-muted rounded-full border border-line-2 px-4 py-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                  placeholder="Ask a question…"
+                  disabled={loading}
+                  className="flex-1 text-[13px] bg-transparent focus:outline-none disabled:opacity-50 text-ink placeholder:text-ink-3"
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={loading || !input.trim()}
+                  className="bg-ember text-white text-[13px] font-medium px-4 py-1.5 rounded-full hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0 flex items-center gap-1.5"
+                >
+                  <IconSend size={13} />
+                  Send
+                </button>
+              </div>
+            </div>
+          </>
+        )}
     </main>
   );
 }

@@ -34,16 +34,21 @@ interface AppLogoProps {
   size?: Size;
   textClassName?: string;
   className?: string;
+  iconOnly?: boolean;
 }
 
-export default function AppLogo({ size = "md", textClassName, className }: AppLogoProps) {
+export { HugIcon };
+
+export default function AppLogo({ size = "md", textClassName, className, iconOnly }: AppLogoProps) {
   const { px, text } = sizeMap[size];
   return (
     <span className={`flex items-center gap-2 ${className ?? ""}`}>
       <HugIcon px={px} />
-      <span className={`font-semibold leading-tight ${text} ${textClassName ?? "text-ink"}`} style={{ fontFamily: "var(--font-bricolage), system-ui, sans-serif" }}>
-        {APP_NAME}
-      </span>
+      {!iconOnly && (
+        <span className={`font-semibold leading-tight ${text} ${textClassName ?? "text-ink"}`} style={{ fontFamily: "var(--font-bricolage), system-ui, sans-serif" }}>
+          {APP_NAME}
+        </span>
+      )}
     </span>
   );
 }
