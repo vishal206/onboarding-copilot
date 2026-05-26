@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, HTTPException, Header
 from svix.webhooks import Webhook, WebhookVerificationError
 from sqlalchemy import select
 from db.session import AsyncSessionLocal
-from db.models import User
+from db.models import User, Bot
 import os
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
@@ -52,6 +52,16 @@ async def clerk_webhook(
                     email=email,
                 )
                 session.add(new_user)
+                await session.flush()
+
+                new_bot = Bot(
+                    user_id=str(new_user.id),
+                    name="Default Bot",
+                    system_prompt="You are a helpful onboarding assistant.",
+                    welcome_message="Hi! How can I help you today?",
+                    is_active=True,
+                )
+                session.add(new_bot)
                 await session.commit()
 
     return {"status": "ok"}

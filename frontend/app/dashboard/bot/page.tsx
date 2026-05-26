@@ -4,8 +4,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import posthog from "posthog-js";
 import { IconCheck } from "@tabler/icons-react";
-
-const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
+import { useBotId } from "@/contexts/BotContext";
 
 interface BotConfig {
   id: string;
@@ -24,8 +23,9 @@ const inputClass =
 
 export default function BotPage() {
   const { getToken } = useAuth();
+  const { botId, botLoading } = useBotId();
   const [form, setForm] = useState<BotConfig>({
-    id: TEST_BOT_ID,
+    id: "",
     name: "",
     welcome_message: "",
     system_prompt: "",
@@ -38,7 +38,8 @@ export default function BotPage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${TEST_BOT_ID}`)
+    if (botLoading || !botId) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${botId}`)
       .then((r) => r.json())
       .then((botData) => {
         setForm({
@@ -53,7 +54,7 @@ export default function BotPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [botId, botLoading]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
@@ -62,12 +63,13 @@ export default function BotPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!botId) return;
     setSaveState("saving");
     setErrorMessage("");
 
     try {
       const token = await getToken();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${TEST_BOT_ID}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${botId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -85,7 +87,7 @@ export default function BotPage() {
       const updated = await res.json();
       setForm((prev) => ({ ...prev, ...updated }));
       posthog.capture("bot_settings_saved", {
-        bot_id: TEST_BOT_ID,
+        bot_id: botId,
         has_system_prompt: !!form.system_prompt,
         has_welcome_message: !!form.welcome_message,
         has_hr_contact: !!form.hr_contact_name,

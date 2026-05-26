@@ -49,11 +49,7 @@ async def upload_document(
     if len(contents) > MAX_SIZE:
         raise HTTPException(status_code=400, detail="File too large. Max size is 10MB")
 
-    # Auto-create bot if it doesn't exist
-    result = await db.execute(select(Bot).where(Bot.id == bot_id))
-    bot = result.scalar_one_or_none()
-
-    # Resolve user regardless — needed for plan limit check
+    # Resolve user — needed for ownership check and plan limit
     user_result = await db.execute(
         select(User).where(User.clerk_user_id == clerk_user_id)
     )
@@ -61,20 +57,13 @@ async def upload_document(
     if not user:
         raise HTTPException(status_code=404, detail="User not found in database")
 
+    # Verify bot exists and belongs to this user
+    result = await db.execute(
+        select(Bot).where(Bot.id == bot_id, Bot.user_id == str(user.id))
+    )
+    bot = result.scalar_one_or_none()
     if not bot:
-        bot = Bot(
-            id=bot_id,
-            user_id=str(user.id),  # internal UUID, not clerk_user_id
-            name="Default Bot",
-            system_prompt="You are a helpful onboarding assistant.",
-            welcome_message="Hi! How can I help you today?",
-            is_active=True,
-        )
-        db.add(bot)
-        try:
-            await db.flush()
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error creating bot: {str(e)}")
+        raise HTTPException(status_code=404, detail="Bot not found")
 
     # Enforce pages limit for this bot
     plan = user.plan or "free"

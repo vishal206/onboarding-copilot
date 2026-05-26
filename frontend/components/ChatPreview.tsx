@@ -76,8 +76,6 @@ function parseBuffer(buffer: string): {
   return { content: content.trim(), sources, hrContact };
 }
 
-const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
-
 export default function ChatPreview({ bot }: { bot: BotInfo }) {
   const [messages, setMessages] = useState<Message[]>(() =>
     bot.welcome_message ? [{ role: "assistant", content: bot.welcome_message }] : [],
@@ -117,7 +115,7 @@ export default function ChatPreview({ bot }: { bot: BotInfo }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bot_id: TEST_BOT_ID,
+          bot_id: bot.id,
           question,
           session_id: sessionId,
           conversation_history: historyBeforeSend,

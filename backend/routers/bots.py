@@ -53,6 +53,30 @@ async def list_bots(
     ]
 
 
+@router.get("/me")
+async def get_my_bot(
+    clerk_user_id: str = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get the authenticated user's bot."""
+    user_result = await db.execute(select(User).where(User.clerk_user_id == clerk_user_id))
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    result = await db.execute(select(Bot).where(Bot.user_id == user.id).limit(1))
+    bot = result.scalar_one_or_none()
+    if not bot:
+        raise HTTPException(status_code=404, detail="No bot found")
+
+    return {
+        "id": str(bot.id),
+        "name": bot.name,
+        "welcome_message": bot.welcome_message,
+        "created_at": bot.created_at,
+    }
+
+
 @router.get("/{bot_id}")
 async def get_bot(bot_id: str, db: AsyncSession = Depends(get_db)):
     """Get full bot configuration."""

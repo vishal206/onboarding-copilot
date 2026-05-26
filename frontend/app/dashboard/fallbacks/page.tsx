@@ -2,8 +2,7 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-
-const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
+import { useBotId } from "@/contexts/BotContext";
 
 interface FallbackMessage {
   conversation_id: string;
@@ -13,14 +12,16 @@ interface FallbackMessage {
 
 export default function FallbacksPage() {
   const { getToken } = useAuth();
+  const { botId, botLoading } = useBotId();
   const [messages, setMessages] = useState<FallbackMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (botLoading || !botId) return;
     getToken()
       .then((token) =>
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${TEST_BOT_ID}/fallbacks`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${botId}/fallbacks`, {
           headers: { Authorization: `Bearer ${token}` },
         })
       )
@@ -39,7 +40,7 @@ export default function FallbacksPage() {
         setError(err.message);
         setLoading(false);
       });
-  }, [getToken]);
+  }, [getToken, botId, botLoading]);
 
   return (
     <div className="min-h-screen">
@@ -49,14 +50,14 @@ export default function FallbacksPage() {
           Questions your bot couldn&apos;t confidently answer, sorted newest first.
         </p>
 
-        {loading && (
+        {(loading || botLoading) && (
           <p className="text-[15px] text-ink-3">Loading…</p>
         )}
         {error && (
           <p className="text-[15px] text-danger-tx">{error}</p>
         )}
 
-        {!loading && !error && messages.length === 0 && (
+        {!loading && !botLoading && !error && messages.length === 0 && (
           <div className="bg-muted rounded-xl border border-line-3 p-10 text-center">
             <p className="text-[17px] font-medium text-ink mb-1">No unanswered questions yet</p>
             <p className="text-[15px] text-ink-2">
@@ -65,7 +66,7 @@ export default function FallbacksPage() {
           </div>
         )}
 
-        {!loading && !error && messages.length > 0 && (
+        {!loading && !botLoading && !error && messages.length > 0 && (
           <div className="rounded-xl border border-line-3 overflow-hidden">
             <table className="w-full text-[15px]">
               <thead className="bg-muted border-b border-line-3">

@@ -5,23 +5,24 @@ import { useState, useEffect } from "react";
 import FileUpload from "@/components/FileUpload";
 import DocumentList from "@/components/DocumentList";
 import { PLAN_MAX_PAGES } from "@/lib/plans";
-
-const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
+import { useBotId } from "@/contexts/BotContext";
 
 export default function DocumentsPage() {
   const { getToken } = useAuth();
+  const { botId, botLoading } = useBotId();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [currentPlan, setCurrentPlan] = useState<string>("free");
   const [pagesUsed, setPagesUsed] = useState<number>(0);
 
   useEffect(() => {
+    if (botLoading || !botId) return;
     getToken().then(async (token) => {
       if (!token) return;
       const [billingRes, botRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/billing/me`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${TEST_BOT_ID}`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${botId}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -34,10 +35,20 @@ export default function DocumentsPage() {
         setPagesUsed(bot.pages_indexed_count ?? 0);
       }
     });
-  }, [getToken, refreshTrigger]);
+  }, [getToken, botId, botLoading, refreshTrigger]);
 
   const maxPages = PLAN_MAX_PAGES[currentPlan];
   const atLimit = maxPages != null && pagesUsed >= maxPages;
+
+  if (botLoading) {
+    return (
+      <div className="min-h-screen">
+        <div className="max-w-225 mx-auto px-8 py-8">
+          <p className="text-[15px] text-ink-3">Loading…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -56,16 +67,20 @@ export default function DocumentsPage() {
           )}
         </div>
 
-        <FileUpload
-          botId={TEST_BOT_ID}
-          onUploadSuccess={() => setRefreshTrigger((prev) => prev + 1)}
-          atLimit={atLimit}
-          maxPages={maxPages}
-        />
-        <DocumentList
-          botId={TEST_BOT_ID}
-          refreshTrigger={refreshTrigger}
-        />
+        {botId && (
+          <>
+            <FileUpload
+              botId={botId}
+              onUploadSuccess={() => setRefreshTrigger((prev) => prev + 1)}
+              atLimit={atLimit}
+              maxPages={maxPages}
+            />
+            <DocumentList
+              botId={botId}
+              refreshTrigger={refreshTrigger}
+            />
+          </>
+        )}
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import posthog from "posthog-js";
 import { COLORS } from "@/lib/colors";
-import { IconCopy, IconCheck, IconExternalLink } from "@tabler/icons-react";
+import { useBotId } from "@/contexts/BotContext";
 import {
   LineChart,
   Line,
@@ -15,8 +15,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-const TEST_BOT_ID = "00000000-0000-0000-0000-000000000001";
 
 interface AnalyticsData {
   total_conversations: number;
@@ -42,8 +40,8 @@ function MetricCard({
 
 export default function DashboardPage() {
   const { getToken } = useAuth();
+  const { botId } = useBotId();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-  const [linkCopied, setLinkCopied] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string>("free");
   const [planLoaded, setPlanLoaded] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(
@@ -57,20 +55,16 @@ export default function DashboardPage() {
     setBannerDismissed(true);
   }
 
-  function handleCopyLink() {
-    const url = `${window.location.origin}/chat/${TEST_BOT_ID}`;
-    navigator.clipboard.writeText(url);
-    posthog.capture("link_copied", { bot_id: TEST_BOT_ID, url });
-    setLinkCopied(true);
-    setTimeout(() => setLinkCopied(false), 2000);
-  }
-
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${TEST_BOT_ID}/analytics`)
+    if (!botId) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/bots/${botId}/analytics`)
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setAnalytics(data))
+      .then((data) => {
+        setAnalytics(data);
+        if (data) posthog.capture("dashboard_analytics_loaded", { bot_id: botId });
+      })
       .catch(() => {});
-  }, []);
+  }, [botId]);
 
   useEffect(() => {
     getToken().then((token) => {
@@ -179,40 +173,13 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* Bot link */}
+        {/* Slack deployment placeholder */}
         <section>
-          <div className="flex items-center justify-between bg-muted rounded-xl border border-line-3 px-5 py-4">
-            <div>
-              <p className="text-[15px] font-medium text-ink mb-0.5">Bot link</p>
-              <p className="text-[13px] text-ink-3 font-mono">{`/chat/${TEST_BOT_ID}`}</p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Link
-                href={`/chat/${TEST_BOT_ID}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-full border border-line-2 bg-surface hover:bg-muted transition-colors text-ink"
-              >
-                <IconExternalLink size={13} />
-                <span>Open</span>
-              </Link>
-              <button
-                onClick={handleCopyLink}
-                className="flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-full border border-line-2 bg-surface hover:bg-muted transition-colors text-ink"
-              >
-                {linkCopied ? (
-                  <>
-                    <IconCheck size={13} />
-                    <span>Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <IconCopy size={13} />
-                    <span>Copy link</span>
-                  </>
-                )}
-              </button>
-            </div>
+          <div className="bg-muted rounded-xl border border-line-3 px-5 py-4">
+            <p className="text-[15px] font-medium text-ink mb-0.5">Slack bot</p>
+            <p className="text-[13px] text-ink-3">
+              Slack deployment is coming soon. Use the preview panel on the right to test your bot.
+            </p>
           </div>
         </section>
       </div>
