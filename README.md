@@ -1,175 +1,137 @@
-# Onboarding Co-Pilot
+<div align="center">
+  <img src="logo.svg" alt="Brudy logo" width="100" height="100" />
 
-An AI-powered onboarding assistant. HR teams upload their documents and policies — new hires get an instant 24/7 Q&A bot that answers their questions accurately.
+  <h1>Brudy</h1>
+
+  <p>HR uploads their docs once. Anyone on the team gets answers instantly — 24/7, no digging required.</p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-black?style=flat-square&logo=next.js&logoColor=white" alt="Next.js" />
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
+    <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
+    <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white" alt="OpenAI" />
+    <img src="https://img.shields.io/badge/Stripe-635BFF?style=flat-square&logo=stripe&logoColor=white" alt="Stripe" />
+    <img src="https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white" alt="Vercel" />
+  </p>
+</div>
+
+<br />
+
+<img src="assets/hero.png" alt="Brudy hero" width="100%" />
 
 ---
 
-## What It Does
+When I joined the company, I had an induction session which covered everything I had to know. After a week, I had some questions. After a month, I had some questions. Even after one year, I had some questions.
 
-- HR uploads onboarding docs, handbooks, and SOPs
-- AI indexes the documents and makes them searchable
-- New hires get a shareable chat link — no account needed
-- HR dashboard tracks conversations and surfaces common questions
+Mostly, I hit up my teammates or tracked down an HR. I saw new joiners after me — and my seniors — had the same questions. When a policy changed, people had questions. When a policy was removed, people had questions. Most of the time, the whole team had no answer.
+
+We all knew it was documented somewhere, and no one had time to find it.
+
+Turns out, this is exactly the kind of problem AI is built for. Still, I couldn't find a product my company or any other could use. So I built Brudy — a simple space where HR uploads their documents and anyone on the team can ask questions and get accurate answers, instantly.
+
+---
+
+## How It Works
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**For HR**
+
+- Upload onboarding docs, handbooks, and SOPs
+- Configure the bot's name, tone, and fallback message
+- Share a public chat link — no account needed for employees
+- Track usage and see what questions come up most
+
+</td>
+<td width="50%" valign="top">
+
+**Under the hood**
+
+- Documents are parsed, chunked, and embedded via OpenAI
+- Embeddings stored in pgvector for semantic similarity search
+- RAG pipeline retrieves the most relevant chunks per query
+- Responses include source citations and graceful fallbacks
+
+</td>
+</tr>
+</table>
+
+<img src="assets/dashboard.png" alt="Brudy dashboard" width="100%" />
 
 ---
 
 ## Tech Stack
 
-| Layer            | Technology                               |
-| ---------------- | ---------------------------------------- |
-| Frontend         | Next.js 14, Tailwind CSS, TypeScript     |
-| Auth             | Clerk                                    |
-| Backend          | Python, FastAPI                          |
-| Database         | PostgreSQL 17 + pgvector 0.8.2 (Railway) |
-| File Storage     | Cloudflare R2                            |
-| AI               | OpenAI API                               |
-| Frontend Hosting | Vercel                                   |
-| Backend Hosting  | Railway                                  |
+| Layer            | Technology                           |
+| ---------------- | ------------------------------------ |
+| Frontend         | Next.js 14, Tailwind CSS, TypeScript |
+| Auth             | Clerk                                |
+| Backend          | Python, FastAPI                      |
+| Database         | PostgreSQL 17 + pgvector (Railway)   |
+| File Storage     | Cloudflare R2                        |
+| AI               | OpenAI API                           |
+| Analytics        | PostHog                              |
+| Payments         | Stripe                               |
+| Frontend Hosting | Vercel                               |
+| Backend Hosting  | Railway                              |
 
 ---
 
-## Project Structure
+## Build Progress
 
-```
-onboarding-copilot/
-  frontend/         → Next.js app
-  backend/          → FastAPI app
-  docs/             → Architecture, setup guides, and decision notes
-```
+**Infrastructure**
 
-### Backend Structure
-
-```
-backend/
-  main.py              → app entry point, middleware, router registration
-  requirements.txt     → Python dependencies
-  .env                 → secrets (never commit)
-  Procfile             → Railway start command
-  db/
-    models.py          → SQLAlchemy table definitions
-    session.py         → DB engine, session, get_db dependency
-  services/
-    storage.py         → Cloudflare R2 upload/download/delete
-  routers/
-    documents.py       → document upload, list, delete endpoints
-  alembic/
-    env.py             → migration config
-    versions/          → migration files
-```
-
-### Frontend Structure
-
-```
-frontend/
-  app/
-    page.tsx                        → public landing page
-    layout.tsx                      → ClerkProvider root layout
-    sign-in/[[...sign-in]]/page.tsx → Clerk sign-in
-    sign-up/[[...sign-up]]/page.tsx → Clerk sign-up
-    dashboard/page.tsx              → protected HR dashboard
-  middleware.ts                     → route protection
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js v20+
-- Python 3.9+
-- Clerk account (clerk.com)
-- Railway account (railway.app)
-- Cloudflare account (cloudflare.com)
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-cp .env.local.example .env.local
-npm run dev                    # http://localhost:3000
-```
-
-### Backend
-
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn main:app --reload      # http://localhost:8000
-```
-
-### Run Migrations
-
-```bash
-cd backend
-source venv/bin/activate
-alembic upgrade head
-```
-
----
-
-## Environment Variables
-
-**frontend/.env.local**
-
-```
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-NEXT_PUBLIC_API_URL=https://your-backend.up.railway.app
-```
-
-**backend/.env**
-
-```
-CLERK_SECRET_KEY=sk_test_...
-DATABASE_URL=postgresql+asyncpg://postgres:password@host:port/railway
-R2_ACCESS_KEY_ID=...
-R2_SECRET_ACCESS_KEY=...
-R2_ENDPOINT_URL=https://your_account_id.r2.cloudflarestorage.com
-R2_BUCKET_NAME=onboarding-copilot-docs
-```
-
----
-
-## Current Status
-
-- [x] Project structure and monorepo setup
-- [x] Next.js frontend with Tailwind CSS
-- [x] FastAPI backend with CORS
-- [x] Deployed backend to Railway
+- [x] Next.js frontend + FastAPI backend
 - [x] Clerk authentication (signup, login, logout)
-- [x] Protected dashboard route with middleware
-- [x] Frontend → Backend token verification
-- [x] PostgreSQL 17 + pgvector 0.8.2 on Railway
-- [x] Database schema with 6 tables + Alembic migrations
-- [x] FastAPI connected to database
+- [x] PostgreSQL 17 + pgvector on Railway
 - [x] Cloudflare R2 file storage
-- [x] Document upload, list, delete endpoints
-- [ ] Clerk webhook → sync users to DB
-- [ ] Document parsing pipeline
-- [ ] RAG chat engine
-- [ ] HR analytics dashboard
-- [ ] Stripe billing
+- [x] Deployed to Vercel + Railway
+
+**Document Pipeline**
+
+- [x] Document upload, list, delete
+- [x] Async document processing with background tasks
+- [x] Text parsing and chunking (tiktoken)
+- [x] OpenAI embeddings stored in pgvector
+
+**AI Chat**
+
+- [x] RAG query pipeline with pgvector similarity search
+- [x] OpenAI text generation with streaming
+- [x] Source citations in responses
+- [x] Fallback handling for low-confidence answers
+- [x] Message persistence across sessions
+
+**HR Dashboard**
+
+- [x] Bot configuration (name, personality, fallback message)
+- [x] Shareable public chat link
+- [x] Usage metrics
+- [x] PostHog analytics integration
+
+**Billing**
+
+- [x] Stripe checkout + customer portal
+- [x] Usage limits with upgrade prompts
+- [x] Pricing page (Free / Starter / Growth / Scale)
+
+**In Progress**
+
+- [ ] Slack / Teams bot integration
 
 ---
 
 ## Docs
 
-Detailed notes on every part of the system — decisions made, gotchas hit, and how things work.
-
-| Doc                                                                                            | What's inside                                                 |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [Architecture](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Architecture.md) | System design, how services connect, why each tech was chosen |
-| [Auth](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Auth.md)                 | Clerk setup, middleware, token flow, version gotchas          |
-| [Database](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Database.md)         | Schema, pgvector, Alembic migrations, connection URLs         |
-| [Storage](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Storage.md)           | Cloudflare R2 setup, file naming, signed URLs                 |
-| [Deployment](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Deployment.md)     | Railway config, environment variables, SSL notes              |
-| [API](https://github.com/vishal206/onboarding-copilot/blob/main/docs/Api.md)                   | All endpoints — current and coming soon                       |
+| Doc                                  | What's inside                                                 |
+| ------------------------------------ | ------------------------------------------------------------- |
+| [Architecture](docs/Architecture.md) | System design, how services connect, why each tech was chosen |
+| [Auth](docs/Auth.md)                 | Clerk setup, middleware, token flow                           |
+| [Database](docs/Database.md)         | Schema, pgvector, Alembic migrations                          |
+| [Storage](docs/Storage.md)           | Cloudflare R2 setup, file naming, signed URLs                 |
+| [Deployment](docs/Deployment.md)     | Railway config, environment variables                         |
+| [API](docs/Api.md)                   | All endpoints                                                 |
